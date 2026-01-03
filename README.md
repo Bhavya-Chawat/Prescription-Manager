@@ -88,8 +88,8 @@ notepad .env
 Update with your MongoDB Atlas connection:
 
 ```env
-MONGODB_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/pharmacy_management
-JWT_SECRET=your-secret-key
+MONGODB_URI=your_mongodb_atlas_connection_string_here
+JWT_SECRET=your_jwt_secret_here
 PORT=5000
 ```
 

@@ -73,6 +73,7 @@ npm run build
 ```
 
 This will:
+
 - Install all backend dependencies
 - Install frontend dependencies
 - Build the React frontend
@@ -101,22 +102,24 @@ NODE_ENV=development
 
 # MongoDB Atlas Connection
 # Replace with your actual connection string from Step 1
-MONGODB_URI=mongodb+srv://pharma_admin:YOUR_PASSWORD_HERE@cluster0.xxxxx.mongodb.net/pharmacy_management
+MONGODB_URI=your_mongodb_atlas_connection_string_here
 
 # Security
 # Generate a secure secret (run: openssl rand -base64 32)
-JWT_SECRET=your-super-secret-pharmacy-key-2026
+JWT_SECRET=your_jwt_secret_here
 JWT_EXPIRES_IN=7d
 ```
 
 **Important:**
+
 - Replace `YOUR_PASSWORD_HERE` with the password you created in Step 1
 - Replace `cluster0.xxxxx.mongodb.net` with your actual cluster URL
 - Add `?retryWrites=true&w=majority` at the end if you encounter connection issues
 
 Example:
+
 ```
-MONGODB_URI=mongodb+srv://pharma_admin:MyPass123@cluster0.ab12cd.mongodb.net/pharmacy_management?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority
 ```
 
 ---
@@ -130,12 +133,14 @@ npm run seed
 ```
 
 This will create:
+
 - 3 test users (admin, pharmacist, viewer)
 - Sample medicines and batches
 - Sample patients
 - Sample suppliers
 
 **Test credentials created:**
+
 - Admin: `admin` / `admin123`
 - Pharmacist: `pharmacist` / `pharma123`
 - Viewer: `viewer` / `view123`
@@ -159,7 +164,8 @@ npm run dev
 ✅ **Application running at:** http://localhost:5000
 
 The server now serves both:
-- Backend API at: http://localhost:5000/api/*
+
+- Backend API at: http://localhost:5000/api/\*
 - Frontend React app at: http://localhost:5000
 
 ---
@@ -211,12 +217,14 @@ Prescription Manager/
 ## 🎨 Design System
 
 **Colors:**
+
 - Primary Green: `#2F6F4E` (pharmacy green)
 - Warning Amber: `#C56A1A` (amber)
 - Error Red: `#C53030`
 - Success Green: `#38A169`
 
 **Design Principles:**
+
 - ✅ Clean, hospital-grade aesthetic
 - ✅ Professional typography (Inter font)
 - ✅ No gradients or flashy animations
@@ -243,27 +251,32 @@ npm test              # Run tests (when implemented)
 ### MongoDB Atlas Connection Issues
 
 **Error: "MongoServerError: bad auth"**
+
 - Double-check your username and password in MONGODB_URI
 - Make sure password doesn't contain special characters that need URL encoding
 - If password has special chars, encode them: `@` → `%40`, `#` → `%23`, etc.
 
 **Error: "connect ETIMEDOUT"**
+
 - Check Network Access settings in MongoDB Atlas
 - Ensure "Allow Access from Anywhere" (0.0.0.0/0) is enabled
 - Check your firewall/antivirus isn't blocking MongoDB connections
 
 **Error: "Authentication failed"**
+
 - Verify the database user was created with correct privileges
 - Wait a few minutes after creating user (propagation delay)
 
 ### Frontend Not Loading
 
 **Error: "Cannot GET /"**
+
 - Make sure you ran `npm run build` first
 - Check that `client/dist` folder exists
 - Restart the server after building
 
 **Blank page or 404 errors**
+
 - Check browser console for errors
 - Verify server.js has the static file serving middleware
 - Try clearing browser cache
@@ -271,6 +284,7 @@ npm test              # Run tests (when implemented)
 ### Server Won't Start
 
 **Error: "Port 5000 already in use"**
+
 ```powershell
 # Find and kill the process using port 5000
 Get-Process -Id (Get-NetTCPConnection -LocalPort 5000).OwningProcess | Stop-Process -Force
@@ -280,6 +294,7 @@ PORT=5001
 ```
 
 **Error: "Module not found"**
+
 ```powershell
 # Delete node_modules and reinstall
 Remove-Item -Recurse -Force node_modules
@@ -289,6 +304,7 @@ npm install
 ### Seed Script Fails
 
 **Error: "Models are not defined"**
+
 - Make sure MongoDB Atlas connection is working
 - Check that MONGODB_URI in .env is correct
 - Verify database user has write permissions
@@ -313,6 +329,7 @@ See `docs/PHASE-1-ARCHITECTURE.md` for detailed implementations.
 ## 🚀 Deployment Ready
 
 This integrated setup is deployment-ready for:
+
 - **Render** (recommended for Node.js)
 - **Heroku**
 - **Railway**
@@ -320,6 +337,7 @@ This integrated setup is deployment-ready for:
 - **DigitalOcean App Platform**
 
 All you need:
+
 1. Push code to GitHub
 2. Connect repository to hosting platform
 3. Set environment variables (MONGODB_URI, JWT_SECRET, PORT)
@@ -332,6 +350,7 @@ MongoDB Atlas works perfectly with all cloud hosting platforms.
 ## 📞 Support
 
 If you encounter issues:
+
 1. Check MongoDB Atlas dashboard (Database → Browse Collections)
 2. Review server logs in PowerShell
 3. Check browser console (F12) for frontend errors
@@ -342,6 +361,7 @@ If you encounter issues:
 ## ✨ Next Steps
 
 After setup, continue development:
+
 - [ ] Complete Inventory page with CRUD operations
 - [ ] Build Prescriptions page with linked list
 - [ ] Implement Queue page with priority queue

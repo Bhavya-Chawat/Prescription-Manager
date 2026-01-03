@@ -15,7 +15,7 @@
 2. Create a new cluster (free M0 tier available)
 3. Create database user with read/write permissions
 4. Whitelist IP addresses (0.0.0.0/0 for all IPs, or specific IPs)
-5. Get connection string: `mongodb+srv://username:password@cluster.mongodb.net/pharma_dsa`
+5. Get connection string from MongoDB Atlas dashboard (Connect > Drivers)
 
 ### 2. Server Environment Variables
 
@@ -27,10 +27,10 @@ PORT=5000
 NODE_ENV=production
 
 # Database
-MONGODB_URI=mongodb+srv://your-username:your-password@cluster.mongodb.net/pharma_dsa?retryWrites=true&w=majority
+MONGODB_URI=your_mongodb_atlas_connection_string_here
 
-# JWT Secret (generate strong random string)
-JWT_SECRET=your-super-secure-random-string-min-32-chars
+# JWT Secret (generate strong random string using: openssl rand -base64 32)
+JWT_SECRET=your_jwt_secret_here
 
 # CORS (your frontend domain)
 CLIENT_URL=https://yourdomain.com
@@ -280,10 +280,10 @@ Viewer: viewer / view123 → Change immediately!
 
 ```bash
 # Backup database
-mongodump --uri="mongodb+srv://username:password@cluster.mongodb.net/pharma_dsa" --out=backup
+mongodump --uri="$MONGODB_URI" --out=backup
 
 # Restore database
-mongorestore --uri="mongodb+srv://username:password@cluster.mongodb.net/pharma_dsa" backup/pharma_dsa
+mongorestore --uri="$MONGODB_URI" backup/pharma_dsa
 ```
 
 ## Scaling Considerations
