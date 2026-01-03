@@ -10,13 +10,13 @@ export const Card = ({
   return (
     <div
       className={`
-        bg-white rounded-xl border border-gray-200 shadow-sm
+        bg-[#FAFBFA] rounded-lg border border-gray-200/80 shadow-sm
         ${
           hover
-            ? "transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-green-200"
+            ? "transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-green-200/60"
             : ""
         }
-        ${gradient ? "bg-gradient-to-br from-white to-gray-50" : ""}
+        ${gradient ? "bg-gradient-to-br from-[#FAFBFA] to-gray-50" : ""}
         ${className}
       `}
       {...props}
@@ -30,8 +30,8 @@ export const CardHeader = ({ children, className = "", gradient = false }) => {
   return (
     <div
       className={`
-      px-6 py-4 border-b border-gray-100
-      ${gradient ? "bg-gradient-to-r from-gray-50 to-white" : ""}
+      px-4 py-3 border-b border-gray-100
+      ${gradient ? "bg-gradient-to-r from-gray-50/80 to-white" : ""}
       ${className}
     `}
     >
@@ -41,17 +41,17 @@ export const CardHeader = ({ children, className = "", gradient = false }) => {
 };
 
 export const CardContent = ({ children, className = "" }) => {
-  return <div className={`px-6 py-5 ${className}`}>{children}</div>;
+  return <div className={`px-4 py-3 ${className}`}>{children}</div>;
 };
 
 export const CardBody = ({ children, className = "" }) => {
-  return <div className={`px-6 py-5 ${className}`}>{children}</div>;
+  return <div className={`px-4 py-3 ${className}`}>{children}</div>;
 };
 
 export const CardFooter = ({ children, className = "" }) => {
   return (
     <div
-      className={`px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-xl ${className}`}
+      className={`px-4 py-3 border-t border-gray-100 bg-gray-50/30 rounded-b-lg ${className}`}
     >
       {children}
     </div>

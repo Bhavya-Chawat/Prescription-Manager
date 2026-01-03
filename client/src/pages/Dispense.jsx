@@ -526,17 +526,17 @@ export default function Dispense() {
 
       {/* DSA Modal */}
       <Dialog open={showDSAModal} onOpenChange={setShowDSAModal}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto scrollbar-hidden">
           <DialogHeader>
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center shadow-lg shadow-green-500/25">
-                <Package className="w-7 h-7 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center shadow-md shadow-green-500/20">
+                <Package className="w-4 h-4 text-white" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-bold text-gray-900">
+                <DialogTitle className="font-bold text-gray-900">
                   Greedy FEFO Algorithm
                 </DialogTitle>
-                <DialogDescription className="text-gray-500 mt-1">
+                <DialogDescription className="text-gray-500">
                   Understanding how First-Expiry-First-Out minimizes medicine
                   wastage
                 </DialogDescription>
@@ -544,16 +544,16 @@ export default function Dispense() {
             </div>
           </DialogHeader>
 
-          <div className="space-y-6 mt-6">
+          <div className="space-y-4 p-4">
             {/* Theory Section */}
-            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200">
-              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-green-500 text-white flex items-center justify-center text-sm">
+            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+              <h3 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-md bg-green-500 text-white flex items-center justify-center text-xs">
                   📚
                 </span>
                 What is the Greedy FEFO Algorithm?
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-xs text-gray-600 leading-relaxed">
                 The <strong className="text-green-700">Greedy FEFO</strong>{" "}
                 (First-Expiry-First-Out) algorithm is a greedy approach that
                 makes locally optimal choices at each step. It always selects
@@ -561,21 +561,21 @@ export default function Dispense() {
                 has available stock. This ensures medicines closest to
                 expiration are used first, minimizing wastage.
               </p>
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl p-4 border border-green-200">
-                  <h4 className="font-semibold text-green-700 mb-2">
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="bg-white rounded-lg p-3 border border-green-200">
+                  <h4 className="font-semibold text-xs text-green-700 mb-1">
                     Greedy Choice Property
                   </h4>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-[11px] text-gray-600">
                     At each step, pick the batch expiring soonest. This local
                     choice leads to global optimal for FEFO.
                   </p>
                 </div>
-                <div className="bg-white rounded-xl p-4 border border-green-200">
-                  <h4 className="font-semibold text-green-700 mb-2">
+                <div className="bg-white rounded-lg p-3 border border-green-200">
+                  <h4 className="font-semibold text-xs text-green-700 mb-1">
                     Optimal Substructure
                   </h4>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-[11px] text-gray-600">
                     After allocating from one batch, the remaining problem has
                     the same structure - allocate remaining quantity.
                   </p>

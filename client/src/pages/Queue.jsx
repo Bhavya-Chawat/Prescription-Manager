@@ -656,17 +656,17 @@ export default function Queue() {
       )}
       {/* DSA Modal */}
       <Dialog open={showDSAModal} onOpenChange={setShowDSAModal}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto scrollbar-hidden">
           <DialogHeader>
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-lg shadow-gray-800/25">
-                <Users className="w-7 h-7 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-md shadow-gray-800/20">
+                <Users className="w-4 h-4 text-white" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-bold text-gray-900">
+                <DialogTitle className="font-bold text-gray-900">
                   Min-Heap Priority Queue
                 </DialogTitle>
-                <DialogDescription className="text-gray-500 mt-1">
+                <DialogDescription className="text-gray-500">
                   Understanding how the Min-Heap efficiently manages patient
                   priority with O(log n) operations
                 </DialogDescription>
@@ -674,16 +674,16 @@ export default function Queue() {
             </div>
           </DialogHeader>
 
-          <div className="space-y-6 mt-6">
+          <div className="space-y-4 p-4">
             {/* Theory Section */}
-            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200">
-              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-green-500 text-white flex items-center justify-center text-sm">
+            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+              <h3 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-md bg-green-500 text-white flex items-center justify-center text-xs">
                   📚
                 </span>
                 What is a Min-Heap Priority Queue?
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-xs text-gray-600 leading-relaxed">
                 A <strong className="text-green-700">Min-Heap</strong> is a
                 complete binary tree where each parent node has a value smaller
                 than or equal to its children. The root always contains the
@@ -691,12 +691,12 @@ export default function Queue() {
                 priority values where lower numbers = higher priority
                 (Emergency=0, High=1, Normal=2, Low=3).
               </p>
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl p-4 border border-gray-200">
-                  <h4 className="font-semibold text-gray-700 mb-2">
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="bg-white rounded-lg p-3 border border-gray-200">
+                  <h4 className="font-semibold text-xs text-gray-700 mb-1">
                     Heap Property
                   </h4>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-[11px] text-gray-600">
                     For every node i: parent(i) ≤ children(i). This ensures the
                     minimum is always at the root in O(1) time.
                   </p>

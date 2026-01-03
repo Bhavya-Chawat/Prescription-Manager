@@ -736,7 +736,7 @@ export default function Inventory() {
 
       {/* Add Medicine Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>Add New Medicine</DialogTitle>
             <DialogDescription>
@@ -745,7 +745,7 @@ export default function Inventory() {
           </DialogHeader>
 
           <form onSubmit={handleAddMedicine}>
-            <div className="space-y-4">
+            <div className="space-y-3 px-4 py-3">
               <Input
                 label="Medicine Name"
                 required
@@ -756,7 +756,7 @@ export default function Inventory() {
                 placeholder="e.g., Paracetamol 500mg"
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <Input
                   label="Medicine Code"
                   required
@@ -787,7 +787,7 @@ export default function Inventory() {
                 placeholder="Company name"
               />
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 <Input
                   label="Unit"
                   required
@@ -836,7 +836,7 @@ export default function Inventory() {
 
       {/* Edit Medicine Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>Edit Medicine</DialogTitle>
             <DialogDescription>
@@ -845,7 +845,7 @@ export default function Inventory() {
           </DialogHeader>
 
           <form onSubmit={handleEditSubmit}>
-            <div className="space-y-4">
+            <div className="space-y-3 px-4 py-3">
               <Input
                 label="Medicine Name"
                 required
@@ -855,7 +855,7 @@ export default function Inventory() {
                 }
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <Input
                   label="Medicine Code"
                   required
@@ -879,7 +879,7 @@ export default function Inventory() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <Input
                   label="Unit"
                   required
@@ -920,11 +920,11 @@ export default function Inventory() {
 
       {/* Batches Dialog */}
       <Dialog open={isBatchesDialogOpen} onOpenChange={setIsBatchesDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[80vh] overflow-y-auto scrollbar-hidden">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                <Package className="w-5 h-5 text-white" />
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                <Package className="w-3.5 h-3.5 text-white" />
               </div>
               Batch Details - {selectedMedicine?.name}
             </DialogTitle>
@@ -934,20 +934,20 @@ export default function Inventory() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 mt-4">
+          <div className="space-y-3 p-4">
             {/* Summary Stats */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-                <p className="text-sm text-gray-600">Total Batches</p>
-                <p className="text-2xl font-bold text-gray-600">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                <p className="text-xs text-gray-600">Total Batches</p>
+                <p className="text-lg font-bold text-gray-600">
                   {(selectedMedicine &&
                     batchesData[selectedMedicine.code]?.length) ||
                     0}
                 </p>
               </div>
-              <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200">
-                <p className="text-sm text-gray-600">Total Stock</p>
-                <p className="text-2xl font-bold text-green-600">
+              <div className="p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+                <p className="text-xs text-gray-600">Total Stock</p>
+                <p className="text-lg font-bold text-green-600">
                   {(selectedMedicine &&
                     batchesData[selectedMedicine.code]?.reduce(
                       (sum, b) => sum + b.quantity,
@@ -956,8 +956,8 @@ export default function Inventory() {
                     0}
                 </p>
               </div>
-              <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200">
-                <p className="text-sm text-gray-600">Earliest Expiry</p>
+              <div className="p-3 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200">
+                <p className="text-xs text-gray-600">Earliest Expiry</p>
                 <p className="text-lg font-bold text-amber-600">
                   {(selectedMedicine &&
                     batchesData[selectedMedicine.code]?.[0]?.expiry) ||
@@ -1066,11 +1066,11 @@ export default function Inventory() {
 
       {/* DSA Modal */}
       <Dialog open={showDSAModal} onOpenChange={setShowDSAModal}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto scrollbar-hidden">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3 text-2xl">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center shadow-lg">
-                <Hash className="w-6 h-6 text-white" />
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center shadow-md">
+                <Hash className="w-4 h-4 text-white" />
               </div>
               Hash Table Data Structure
             </DialogTitle>
@@ -1079,25 +1079,25 @@ export default function Inventory() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 p-6">
+          <div className="space-y-4 p-4">
             {/* Theory Section */}
-            <div className="relative overflow-hidden p-6 bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-2xl text-white">
+            <div className="relative overflow-hidden p-4 bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-xl text-white">
               <div className="relative z-10">
-                <h3 className="font-bold text-xl mb-3 flex items-center gap-2">
+                <h3 className="font-bold text-sm mb-2 flex items-center gap-2">
                   📚 What is a Hash Table?
                 </h3>
-                <p className="text-white/90 leading-relaxed mb-4">
+                <p className="text-white/90 text-xs leading-relaxed mb-3">
                   A Hash Table is a data structure that stores key-value pairs
                   and provides <strong>O(1) average-case</strong> time
                   complexity for insertion, deletion, and lookup operations. It
                   uses a hash function to compute an index into an array of
                   buckets, from which the desired value can be found.
                 </p>
-                <div className="flex flex-wrap gap-3">
-                  <div className="px-3 py-1.5 bg-white/20 rounded-full text-sm font-medium">
+                <div className="flex flex-wrap gap-2">
+                  <div className="px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
                     Insert: O(1)
                   </div>
-                  <div className="px-3 py-1.5 bg-white/20 rounded-full text-sm font-medium">
+                  <div className="px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
                     Search: O(1)
                   </div>
                   <div className="px-3 py-1.5 bg-white/20 rounded-full text-sm font-medium">

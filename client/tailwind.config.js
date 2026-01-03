@@ -17,11 +17,21 @@ module.exports = {
       },
     },
     extend: {
+      fontSize: {
+        xs: ["0.65rem", { lineHeight: "0.9rem" }],
+        sm: ["0.75rem", { lineHeight: "1.1rem" }],
+        base: ["0.8125rem", { lineHeight: "1.25rem" }],
+        lg: ["0.9rem", { lineHeight: "1.35rem" }],
+        xl: ["1rem", { lineHeight: "1.45rem" }],
+        "2xl": ["1.125rem", { lineHeight: "1.6rem" }],
+        "3xl": ["1.35rem", { lineHeight: "1.85rem" }],
+        "4xl": ["1.65rem", { lineHeight: "2rem" }],
+      },
       colors: {
-        // Light Green + Black Color Palette
-        "app-bg": "#F8FBF8",
-        "card-surface": "#FFFFFF",
-        "border-color": "#E2E8E4",
+        // Light Green + Black Color Palette - Off-white theme
+        "app-bg": "#F5F7F5",
+        "card-surface": "#FAFBFA",
+        "border-color": "#E0E5E1",
 
         "text-primary": "#111111",
         "text-secondary": "#333333",

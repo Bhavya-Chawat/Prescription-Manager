@@ -5,10 +5,10 @@ import Topbar from "./Topbar";
 
 export default function Layout() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-[#F5F7F5]">
       <Sidebar />
       <Topbar />
-      <main className="ml-64 mt-16 p-8">
+      <main className="ml-56 mt-14 p-6">
         <div className="max-w-7xl mx-auto animate-fade-in">
           <Outlet />
         </div>

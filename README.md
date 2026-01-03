@@ -1,14 +1,20 @@
-# Priority-Driven Pharmacy Management System
+# PharmaDSA - Priority-Driven Pharmacy Management System
 
-A complete, production-ready pharmacy management web application built with MERN stack (MongoDB Atlas, Express.js, React, Node.js) demonstrating core Data Structures & Algorithms.
+![Production Ready](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![Node](https://img.shields.io/badge/Node-v18+-green)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green)
 
-## 🚀 Features
+A production-ready pharmacy management system built with MERN stack, demonstrating practical applications of Data Structures & Algorithms in healthcare.
 
-- **Integrated Deployment** - Single Node.js server serves both frontend and backend
-- **Cloud Database** - MongoDB Atlas (no local database needed)
-- **Professional UI** - Clean, hospital-grade design with pharmacy colors
-- **Authentication** - JWT-based with role-based access (Admin, Pharmacist, Viewer)
-- **DSA Implementation** - 6 algorithms: Hash Tables, Linked Lists, Priority Queues, FIFO Queues, Greedy Algorithms, Append-Only Logs
+## 🌟 Key Features
+
+- **🔐 Role-Based Access Control** - Admin, Pharmacist, Viewer roles with JWT authentication
+- **☁️ Cloud-Ready** - MongoDB Atlas integration, scalable architecture
+- **⚡ Performance Optimized** - O(1) medicine lookups, O(log n) queue operations
+- **🔒 Audit Trail** - Immutable blockchain-like hash chain for compliance
+- **📱 Responsive Design** - Works on desktop, tablet, and mobile
+- **🎨 Professional UI** - Clean, hospital-grade interface
 
 ## 🎨 Design System
 

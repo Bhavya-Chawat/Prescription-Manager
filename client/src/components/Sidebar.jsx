@@ -32,35 +32,35 @@ const Sidebar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="fixed left-0 top-0 h-screen w-64 bg-gray-950 flex flex-col border-r border-gray-800">
+    <div className="fixed left-0 top-0 h-screen w-56 bg-gray-950 flex flex-col border-r border-gray-800/80">
       {/* Logo Section */}
-      <div className="p-6 border-b border-gray-800">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center shadow-lg shadow-green-500/20">
-            <Pill className="w-6 h-6 text-gray-950" />
+      <div className="p-4 border-b border-gray-800/80">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center shadow-md shadow-green-500/15">
+            <Pill className="w-5 h-5 text-gray-950" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white tracking-tight">
+            <h1 className="text-sm font-bold text-white tracking-tight">
               PharmaDSA
             </h1>
-            <p className="text-xs text-gray-500">Smart Management</p>
+            <p className="text-[10px] text-gray-500">Smart Management</p>
           </div>
         </div>
       </div>
 
       {/* User Info */}
-      <div className="px-4 py-4 border-b border-gray-800">
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-900/80">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center text-gray-950 font-bold shadow-lg shadow-green-500/20">
+      <div className="px-3 py-3 border-b border-gray-800/80">
+        <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-gray-900/60">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center text-gray-950 text-xs font-bold shadow-md shadow-green-500/15">
             {(user?.username || "U")[0].toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">
+            <p className="text-xs font-medium text-white truncate">
               {user?.username || "User"}
             </p>
-            <div className="flex items-center gap-1.5">
-              <Shield className="w-3 h-3 text-green-400" />
-              <p className="text-xs text-gray-500 capitalize">
+            <div className="flex items-center gap-1">
+              <Shield className="w-2.5 h-2.5 text-green-400" />
+              <p className="text-[10px] text-gray-500 capitalize">
                 {user?.role || "viewer"}
               </p>
             </div>
@@ -69,8 +69,8 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 overflow-y-auto space-y-1">
-        <p className="px-3 py-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+      <nav className="flex-1 p-3 overflow-y-auto scrollbar-hidden space-y-0.5">
+        <p className="px-3 py-1.5 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
           Menu
         </p>
         {menuItems.map((item) => {
@@ -82,18 +82,18 @@ const Sidebar = () => {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={`
-                w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200
                 ${
                   active
-                    ? "bg-green-500 text-gray-950 shadow-lg shadow-green-500/25"
-                    : "text-gray-400 hover:text-white hover:bg-gray-800"
+                    ? "bg-green-500 text-gray-950 shadow-md shadow-green-500/20"
+                    : "text-gray-400 hover:text-white hover:bg-gray-800/80"
                 }
               `}
             >
-              <Icon className={`w-5 h-5 ${active ? "text-gray-950" : ""}`} />
+              <Icon className={`w-4 h-4 ${active ? "text-gray-950" : ""}`} />
               {item.label}
               {active && (
-                <span className="ml-auto w-2 h-2 rounded-full bg-gray-950/30 animate-pulse" />
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gray-950/30 animate-pulse" />
               )}
             </button>
           );
@@ -101,16 +101,16 @@ const Sidebar = () => {
       </nav>
 
       {/* Bottom Section */}
-      <div className="p-4 border-t border-gray-800 space-y-1">
+      <div className="p-3 border-t border-gray-800/80 space-y-0.5">
         <button
           onClick={() => navigate("/settings")}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
             isActive("/settings")
-              ? "bg-green-500 text-gray-950 shadow-lg shadow-green-500/25"
-              : "text-gray-400 hover:text-white hover:bg-gray-800"
+              ? "bg-green-500 text-gray-950 shadow-md shadow-green-500/20"
+              : "text-gray-400 hover:text-white hover:bg-gray-800/80"
           }`}
         >
-          <Settings className="w-5 h-5" />
+          <Settings className="w-4 h-4" />
           Settings
         </button>
         <button
@@ -118,9 +118,9 @@ const Sidebar = () => {
             logout();
             navigate("/login");
           }}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
         >
-          <LogOut className="w-5 h-5" />
+          <LogOut className="w-4 h-4" />
           Logout
         </button>
       </div>

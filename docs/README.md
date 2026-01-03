@@ -1,196 +1,83 @@
-# PharmaDSA - Priority-Driven Pharmacy Management System 🏥
+# PharmaDSA - Documentation Index 📚
 
-## Overview
+## Welcome to PharmaDSA Documentation
 
-PharmaDSA is an educational web application demonstrating **Data Structures & Algorithms** in a real-world pharmacy management context. Each module showcases a different DSA with practical applications and visualizations.
+This folder contains all comprehensive documentation for the PharmaDSA pharmacy management system.
 
-## 🎯 Purpose
+## 📖 Documentation Files
 
-This project serves as:
+### Getting Started
 
-- **Educational Tool**: Learn DSA through practical pharmacy scenarios
-- **Portfolio Project**: Demonstrate full-stack development skills
-- **Algorithm Visualization**: Interactive DSA demonstrations
-- **Role-Based System**: RBAC implementation example
+- **[../README.md](../README.md)** - Main project overview and quick start guide
+- **[SETUP.md](./SETUP.md)** - Complete installation and environment setup
+- **[PRODUCTION_DEPLOYMENT.md](./PRODUCTION_DEPLOYMENT.md)** - Production deployment guide
+- **[PRODUCTION_CHECKLIST.md](./PRODUCTION_CHECKLIST.md)** - Pre-deployment verification checklist
 
-## 🏗️ Architecture
+### User Documentation
 
-```
-Prescription Manager/
-├── client/          # React + Vite frontend
-│   ├── src/
-│   │   ├── components/  # Reusable UI components
-│   │   ├── pages/       # Main application pages
-│   │   ├── store/       # Zustand state management
-│   │   └── utils/       # Helper functions
-│   └── public/          # Static assets
-├── server/          # Node.js + Express backend
-│   ├── models/      # MongoDB schemas
-│   ├── routes/      # API endpoints
-│   └── middleware/  # Authentication & validation
-└── docs/            # Documentation files
-```
+- **[USER_GUIDE.md](./USER_GUIDE.md)** - Complete feature walkthrough and usage instructions
+- **[SYSTEM_FLOW_DOCUMENTATION.md](./SYSTEM_FLOW_DOCUMENTATION.md)** - System flow and architecture explanation
 
-## 🔑 Login Credentials
+### Technical Documentation
 
-### Role-Based Access Control (RBAC)
+- **[DSA_ALGORITHMS.md](./DSA_ALGORITHMS.md)** - Algorithm implementations with C++ code and theory
+- **[SAMPLE_DATA.md](./SAMPLE_DATA.md)** - Sample data structures and sources
+- **[PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md)** - Complete project summary and features
 
-| Role           | Username     | Password    | Permissions                                                             |
-| -------------- | ------------ | ----------- | ----------------------------------------------------------------------- |
-| **Admin**      | `admin`      | `admin123`  | Full access: manage medicines, process queue, dispense, view audit logs |
-| **Pharmacist** | `pharmacist` | `pharma123` | Operational: dispense medicines, manage queue, view inventory           |
-| **Viewer**     | `viewer`     | `view123`   | Read-only: view data only, no modifications                             |
+## � System Features
 
-**Purpose**: Demonstrates security hierarchy in healthcare systems where different roles have different access levels.
+- **Role-Based Access Control** - 3 user roles with different permissions
+- **Cloud Database** - MongoDB Atlas integration
+- **Audit Trail** - Immutable hash chain for compliance
+- **DSA Implementations** - Hash Table, Min-Heap, Greedy FEFO, Append-Only Log
+- **Production Ready** - Fully tested and deployable
 
-## 📚 Documentation Files
+## 🔑 Test Credentials
 
-- **[USER_GUIDE.md](./USER_GUIDE.md)** - How to use the application
-- **[DSA_ALGORITHMS.md](./DSA_ALGORITHMS.md)** - Algorithm explanations with C++ code
-- **[SAMPLE_DATA.md](./SAMPLE_DATA.md)** - Sample data structure and sources
-- **[API_REFERENCE.md](./API_REFERENCE.md)** - Backend API documentation
-- **[SETUP.md](../SETUP.md)** - Installation and setup instructions
+For testing purposes, the system comes with pre-seeded users:
+
+| Role           | Username     | Password    | Access Level       |
+| -------------- | ------------ | ----------- | ------------------ |
+| **Admin**      | `admin`      | `admin123`  | Full system access |
+| **Pharmacist** | `pharmacist` | `pharma123` | Operational access |
+| **Viewer**     | `viewer`     | `view123`   | Read-only access   |
+
+**⚠️ IMPORTANT**: Change these passwords immediately in production!
 
 ## 🚀 Quick Start
 
-### Prerequisites
+See [SETUP.md](./SETUP.md) for detailed installation instructions or [../README.md](../README.md) for quick start guide.
 
-- Node.js 18+
-- MongoDB (local or Atlas)
-- npm or yarn
+## 📂 Project Structure
 
-### Installation
-
-1. **Clone the repository**
-
-```bash
-git clone <repository-url>
-cd "Prescription Manager"
+```
+Prescription Manager/
+├── client/              # React frontend
+│   └── src/
+│       ├── components/  # UI components
+│       ├── pages/       # Application pages
+│       └── services/    # API services
+├── server/              # Node.js backend
+│   └── src/
+│       ├── models/      # MongoDB schemas
+│       ├── controllers/ # Business logic
+│       ├── dsa/         # DSA implementations
+│       └── middleware/  # Auth & validation
+└── docs/                # Documentation (you are here)
 ```
 
-2. **Install dependencies**
+## 🛠️ Tech Stack
 
-```bash
-# Install server dependencies
-cd server
-npm install
-
-# Install client dependencies
-cd ../client
-npm install
-```
-
-3. **Setup environment variables**
-
-```bash
-# In server directory
-cp .env.example .env
-# Edit .env with your MongoDB URI and JWT secret
-```
-
-4. **Seed the database**
-
-```bash
-cd server
-npm run seed
-```
-
-5. **Run the application**
-
-Terminal 1 (Backend):
-
-```bash
-cd server
-npm run dev
-```
-
-Terminal 2 (Frontend):
-
-```bash
-cd client
-npm run dev
-```
-
-6. **Access the application**
-
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:5000
-
-## 🎨 Features by Module
-
-### 💊 Inventory Management
-
-- **DSA**: Hash Table (16 buckets)
-- **Complexity**: O(1) lookup, O(1) insert
-- **Features**: Instant medicine search, stock tracking, low stock alerts
-
-### 👥 Patient Queue
-
-- **DSA**: Min-Heap Priority Queue
-- **Complexity**: O(log n) insert/extract, O(1) peek
-- **Features**: Priority-based processing, automatic ordering, emergency handling
-
-### 📋 Prescription Dispensing
-
-- **DSA**: Greedy FEFO Algorithm
-- **Complexity**: O(n log n) sort + O(n) allocate
-- **Features**: Batch expiry management, wastage minimization, allocation optimization
-
-### 📜 Audit History
-
-- **DSA**: Append-Only Log with Hash Chain
-- **Complexity**: O(1) append, O(n) verify
-- **Features**: Immutable audit trail, tamper detection, blockchain-like verification
-
-## 🔧 Technology Stack
-
-### Frontend
-
-- **React 18** - UI library
-- **Vite** - Build tool & dev server
-- **Tailwind CSS** - Utility-first CSS
-- **Zustand** - State management
-- **Axios** - HTTP client
-- **Lucide React** - Icon library
-- **Radix UI** - Accessible components
-
-### Backend
-
-- **Node.js** - Runtime environment
-- **Express** - Web framework
-- **MongoDB** - NoSQL database
-- **Mongoose** - ODM
-- **JWT** - Authentication
-- **bcrypt** - Password hashing
-
-## 📖 Learning Resources
-
-Each algorithm page includes:
-
-- **Interactive visualization** - See the data structure in action
-- **Step-by-step explanation** - Understand how it works
-- **Time complexity analysis** - Learn the efficiency
-- **Real-world applications** - Where it's used
-- **C++ implementation** - Code examples
-- **Comparison tables** - Why this algorithm?
-
-## 🤝 Contributing
-
-This is an educational project. Feel free to:
-
-- Report bugs
-- Suggest improvements
-- Add new DSA demonstrations
-- Improve documentation
+- **Frontend**: React 18, Vite, Tailwind CSS, Zustand
+- **Backend**: Node.js, Express.js, MongoDB
+- **Security**: JWT, bcrypt, RBAC
+- **DSA**: Custom implementations in JavaScript
 
 ## 📝 License
 
-MIT License - Free to use for educational purposes
-
-## 👨‍💻 Author
-
-Built as a learning project to demonstrate DSA knowledge in practical applications.
+MIT License - See LICENSE file for details
 
 ---
 
-**Need Help?** Click the ❓ Help button in the top navigation for in-app guidance!
+**Last Updated**: January 2026  
+**Status**: Production Ready

@@ -381,10 +381,6 @@ export default function AuditHistory() {
             <Eye className="w-4 h-4 mr-2" />
             View Algorithm
           </Button>
-          <Button onClick={handleAddLogEntry}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Log Entry
-          </Button>
         </div>
       </div>
 
@@ -609,17 +605,17 @@ export default function AuditHistory() {
 
       {/* DSA Modal */}
       <Dialog open={showDSAModal} onOpenChange={setShowDSAModal}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto scrollbar-hidden">
           <DialogHeader>
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-lg shadow-gray-800/25">
-                <History className="w-7 h-7 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-md shadow-gray-800/20">
+                <History className="w-4 h-4 text-white" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-bold text-gray-900">
+                <DialogTitle className="font-bold text-gray-900">
                   Append-Only Log & Hash Chain
                 </DialogTitle>
-                <DialogDescription className="text-gray-500 mt-1">
+                <DialogDescription className="text-gray-500">
                   Understanding how hash chains ensure tamper-evident audit
                   trails
                 </DialogDescription>
@@ -627,16 +623,16 @@ export default function AuditHistory() {
             </div>
           </DialogHeader>
 
-          <div className="space-y-6 mt-6">
+          <div className="space-y-4 p-4">
             {/* Theory Section */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <span className="w-8 h-8 rounded-lg bg-gray-800 text-white flex items-center justify-center text-sm">
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
+              <h3 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-md bg-gray-800 text-white flex items-center justify-center text-xs">
                   📚
                 </span>
                 What is an Append-Only Log with Hash Chain?
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-xs text-gray-600 leading-relaxed">
                 An <strong className="text-gray-800">Append-Only Log</strong> is
                 an immutable data structure where entries can only be added at
                 the end - never modified or deleted. Each entry contains a
@@ -644,18 +640,18 @@ export default function AuditHistory() {
                 forming a chain. If any entry is tampered with, its hash
                 changes, breaking the chain for all subsequent entries.
               </p>
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl p-4 border border-gray-200">
-                  <h4 className="font-semibold text-gray-700 mb-2">
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="bg-white rounded-lg p-3 border border-gray-200">
+                  <h4 className="font-semibold text-xs text-gray-700 mb-1">
                     Immutability
                   </h4>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-[11px] text-gray-600">
                     Once appended, entries cannot be changed. This ensures
                     complete audit trail integrity.
                   </p>
                 </div>
-                <div className="bg-white rounded-xl p-4 border border-gray-200">
-                  <h4 className="font-semibold text-gray-700 mb-2">
+                <div className="bg-white rounded-lg p-3 border border-gray-200">
+                  <h4 className="font-semibold text-xs text-gray-700 mb-1">
                     Tamper Evidence
                   </h4>
                   <p className="text-sm text-gray-600">

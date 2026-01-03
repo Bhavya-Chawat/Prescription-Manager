@@ -83,46 +83,46 @@ const Topbar = () => {
 
   return (
     <>
-      <div className="fixed top-0 left-64 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-10">
+      <div className="fixed top-0 left-56 right-0 h-14 bg-[#FAFBFA] border-b border-gray-200/80 flex items-center justify-between px-5 z-10">
         {/* Left Section */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-green-500" />
-            <span className="font-semibold text-lg text-gray-900">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-green-500" />
+            <span className="font-semibold text-sm text-gray-800">
               Pharmacy Management System
             </span>
           </div>
           <Badge variant="primary" size="xs">
-            <Sparkles className="w-3 h-3 mr-1" />
+            <Sparkles className="w-2.5 h-2.5 mr-0.5" />
             DSA Project
           </Badge>
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {/* Help Button */}
           <button
             onClick={() => setShowHelpModal(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-green-500 text-gray-950 rounded-xl shadow-md shadow-green-500/25 hover:bg-green-400 hover:shadow-lg transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-green-500 text-gray-950 rounded-lg shadow-sm shadow-green-500/15 hover:bg-green-400 hover:shadow-md transition-all"
           >
-            <HelpCircle className="w-4 h-4" />
+            <HelpCircle className="w-3.5 h-3.5" />
             Help
           </button>
 
           {/* Divider */}
-          <div className="h-8 w-px bg-gray-200" />
+          <div className="h-6 w-px bg-gray-200" />
 
           {/* User */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-xs font-medium text-gray-800">
                 {user?.username || "User"}
               </p>
-              <p className="text-xs text-gray-500 capitalize">
+              <p className="text-[10px] text-gray-500 capitalize">
                 {user?.role || "viewer"}
               </p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-gray-950 flex items-center justify-center text-green-400 font-bold shadow-lg">
+            <div className="w-8 h-8 rounded-lg bg-gray-950 flex items-center justify-center text-green-400 text-xs font-bold shadow-md">
               {(user?.username || "U")[0].toUpperCase()}
             </div>
           </div>
@@ -131,60 +131,60 @@ const Topbar = () => {
 
       {/* Help Modal */}
       <Dialog open={showHelpModal} onOpenChange={setShowHelpModal}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto scrollbar-hidden">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3 text-2xl">
-              <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center">
-                <HelpCircle className="w-5 h-5 text-gray-950" />
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-green-500 flex items-center justify-center">
+                <HelpCircle className="w-3.5 h-3.5 text-gray-950" />
               </div>
               Software Usage Guide
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6 p-6">
+          <div className="space-y-3 p-4">
             {/* Quick Start Banner */}
-            <div className="relative overflow-hidden p-6 bg-gray-950 rounded-2xl text-white">
+            <div className="relative overflow-hidden p-3 bg-gray-950 rounded-lg text-white">
               <div className="relative z-10">
-                <h3 className="font-bold text-xl mb-2 text-green-400">
+                <h3 className="font-bold text-xs mb-1 text-green-400">
                   🚀 Quick Start
                 </h3>
-                <p className="text-gray-300 text-sm leading-relaxed">
+                <p className="text-gray-300 text-[11px] leading-relaxed">
                   This is a Priority-Driven Pharmacy Management System
                   demonstrating Data Structures & Algorithms. Each page
                   showcases a different algorithm with practical applications.
                 </p>
               </div>
-              <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-green-500/20 rounded-full blur-xl" />
-              <div className="absolute -right-4 -top-4 w-20 h-20 bg-green-500/20 rounded-full blur-lg" />
+              <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-green-500/20 rounded-full blur-xl" />
+              <div className="absolute -right-3 -top-3 w-12 h-12 bg-green-500/20 rounded-full blur-lg" />
             </div>
 
             {/* Feature Cards */}
-            <div className="grid gap-4">
+            <div className="grid gap-3">
               {helpSections.map((section, index) => (
                 <div
                   key={index}
-                  className="group p-5 bg-white border border-gray-200 rounded-2xl hover:shadow-lg hover:border-green-200 transition-all duration-300"
+                  className="group p-3 bg-white border border-gray-200 rounded-lg hover:shadow-md hover:border-green-200 transition-all duration-200"
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-3">
                     <div
-                      className={`w-12 h-12 rounded-xl bg-gradient-to-br ${section.color} flex items-center justify-center text-2xl shadow-lg flex-shrink-0`}
+                      className={`w-8 h-8 rounded-lg bg-gradient-to-br ${section.color} flex items-center justify-center text-base shadow-sm flex-shrink-0`}
                     >
                       {section.icon}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-lg text-gray-900 mb-1">
+                      <h4 className="font-semibold text-sm text-gray-900 mb-0.5">
                         {section.title}
                       </h4>
-                      <p className="text-sm text-gray-500 mb-3">
+                      <p className="text-[11px] text-gray-500 mb-2">
                         {section.description}
                       </p>
-                      <ul className="space-y-2">
+                      <ul className="space-y-1">
                         {section.features.map((feature, i) => (
                           <li
                             key={i}
-                            className="flex items-start gap-2 text-sm text-gray-600"
+                            className="flex items-start gap-1.5 text-[11px] text-gray-600"
                           >
-                            <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <CheckCircle2 className="w-3 h-3 text-green-500 mt-0.5 flex-shrink-0" />
                             <span>{feature}</span>
                           </li>
                         ))}
@@ -196,33 +196,33 @@ const Topbar = () => {
             </div>
 
             {/* DSA Tips */}
-            <div className="p-5 bg-gradient-to-br from-info-light to-secondary-light rounded-2xl border border-info/20">
-              <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                <span className="text-xl">💡</span>
+            <div className="p-3 bg-gradient-to-br from-info-light to-secondary-light rounded-lg border border-info/20">
+              <h3 className="font-semibold text-xs text-slate-900 mb-2 flex items-center gap-1.5">
+                <span className="text-sm">💡</span>
                 DSA Visualization Tips
               </h3>
-              <ul className="space-y-2 text-sm text-slate-600">
-                <li className="flex items-start gap-2">
+              <ul className="space-y-1 text-[11px] text-slate-600">
+                <li className="flex items-start gap-1.5">
                   <span className="text-primary">•</span>
                   Click "View Algorithm" buttons to see data structures in
                   action
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-1.5">
                   <span className="text-primary">•</span>
                   Hash Table: Type medicine codes starting with "MED" for
                   instant O(1) lookup
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-1.5">
                   <span className="text-primary">•</span>
                   Min-Heap: Add patients or process queue to see heap
                   reorganization
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-1.5">
                   <span className="text-primary">•</span>
                   FEFO: Search prescriptions to see greedy batch allocation
                   step-by-step
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-1.5">
                   <span className="text-primary">•</span>
                   Audit Log: Add entries to see the immutable hash chain grow
                 </li>

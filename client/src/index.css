@@ -29,11 +29,25 @@
   }
 
   .card-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5;
   }
 
   .btn-glow {
     @apply shadow-glow hover:shadow-lg transition-shadow duration-300;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Smooth transitions for all interactive elements */
+  .smooth-transition {
+    @apply transition-all duration-200 ease-out;
   }
 }
 
@@ -101,16 +115,29 @@
   }
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - Subtle */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   @apply bg-transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
+  @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+}
+
+/* Global smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke,
+    opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Better focus states */
+*:focus-visible {
+  @apply outline-none ring-2 ring-primary/30 ring-offset-1;
 }
 
 /* Code Block Styling */

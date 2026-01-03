@@ -280,18 +280,18 @@ export default function Prescriptions() {
 
       {/* Add Prescription Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>New Prescription</DialogTitle>
             <DialogDescription>
               Create a new prescription for a patient
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-3 px-4 py-3">
             <Input label="Patient Name" placeholder="Enter patient name" />
             <Input label="Doctor Name" placeholder="Enter doctor name" />
             <Input label="Department" placeholder="e.g., General Medicine" />
-            <div className="text-sm text-text-muted">
+            <div className="text-xs text-text-muted">
               Add prescription items after creating the prescription
             </div>
           </div>
