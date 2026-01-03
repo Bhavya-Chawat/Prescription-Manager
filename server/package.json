@@ -6,7 +6,6 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "build": "cd ../client && npm install && npm run build",
-    "postbuild": "echo Build complete! Frontend integrated.",
     "seed": "node src/scripts/seed.js",
     "test": "jest tests"
   },
