@@ -25,6 +25,13 @@ import {
 } from "../components/ui/Dialog";
 import EmptyState from "../components/ui/EmptyState";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import {
+  createMedicine,
+  getAllMedicines,
+  updateMedicine,
+  createBatch,
+  getBatchesForMedicine,
+} from "../services/inventoryApi";
 
 // ============================================
 // DSA: HASH TABLE IMPLEMENTATION
@@ -174,19 +181,28 @@ export default function Inventory() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isBatchesDialogOpen, setIsBatchesDialogOpen] = useState(false);
+  const [isAddBatchDialogOpen, setIsAddBatchDialogOpen] = useState(false);
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [showDSAModal, setShowDSAModal] = useState(false);
   const [highlightedBucket, setHighlightedBucket] = useState(null);
   const [searchTime, setSearchTime] = useState(null);
   const [searchResult, setSearchResult] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     code: "",
     category: "",
     manufacturer: "",
     unit: "Tablet",
+    unitPrice: 0,
     minStockLevel: 10,
     maxStockLevel: 100,
+    addBatch: true,
+    batchNumber: "",
+    batchQuantity: "",
+    batchExpiry: "",
   });
   const [editFormData, setEditFormData] = useState({
     name: "",
@@ -195,138 +211,12 @@ export default function Inventory() {
     unit: "",
     minStock: 0,
   });
-
-  // Sample batches data for each medicine
-  const batchesData = {
-    MED001: [
-      {
-        id: 1,
-        batchCode: "B2024-001",
-        quantity: 100,
-        expiry: "2025-03-15",
-        manufacturer: "PharmaCo",
-        purchaseDate: "2024-01-10",
-      },
-      {
-        id: 2,
-        batchCode: "B2024-023",
-        quantity: 100,
-        expiry: "2025-06-20",
-        manufacturer: "PharmaCo",
-        purchaseDate: "2024-02-15",
-      },
-      {
-        id: 3,
-        batchCode: "B2024-045",
-        quantity: 50,
-        expiry: "2025-12-31",
-        manufacturer: "MediSupply",
-        purchaseDate: "2024-03-20",
-      },
-    ],
-    MED002: [
-      {
-        id: 4,
-        batchCode: "B2024-012",
-        quantity: 60,
-        expiry: "2025-05-10",
-        manufacturer: "AntibioCorp",
-        purchaseDate: "2024-01-25",
-      },
-      {
-        id: 5,
-        batchCode: "B2024-067",
-        quantity: 60,
-        expiry: "2025-08-25",
-        manufacturer: "AntibioCorp",
-        purchaseDate: "2024-02-28",
-      },
-    ],
-    MED003: [
-      {
-        id: 6,
-        batchCode: "B2024-034",
-        quantity: 10,
-        expiry: "2025-02-28",
-        manufacturer: "HealthPharma",
-        purchaseDate: "2024-01-05",
-      },
-      {
-        id: 7,
-        batchCode: "B2024-089",
-        quantity: 5,
-        expiry: "2025-11-15",
-        manufacturer: "HealthPharma",
-        purchaseDate: "2024-04-10",
-      },
-    ],
-    MED004: [
-      {
-        id: 8,
-        batchCode: "B2024-INS-001",
-        quantity: 5,
-        expiry: "2025-01-20",
-        manufacturer: "InsulinCare",
-        purchaseDate: "2024-01-02",
-      },
-    ],
-    MED005: [
-      {
-        id: 9,
-        batchCode: "B2024-056",
-        quantity: 90,
-        expiry: "2025-07-15",
-        manufacturer: "DiabetesCo",
-        purchaseDate: "2024-02-01",
-      },
-      {
-        id: 10,
-        batchCode: "B2024-078",
-        quantity: 90,
-        expiry: "2025-09-30",
-        manufacturer: "DiabetesCo",
-        purchaseDate: "2024-03-15",
-      },
-    ],
-    MED006: [
-      {
-        id: 11,
-        batchCode: "B2024-099",
-        quantity: 95,
-        expiry: "2025-08-20",
-        manufacturer: "GastroPharma",
-        purchaseDate: "2024-02-20",
-      },
-    ],
-    MED007: [
-      {
-        id: 12,
-        batchCode: "B2024-110",
-        quantity: 100,
-        expiry: "2025-10-15",
-        manufacturer: "CardioCare",
-        purchaseDate: "2024-03-01",
-      },
-      {
-        id: 13,
-        batchCode: "B2024-125",
-        quantity: 100,
-        expiry: "2026-01-30",
-        manufacturer: "CardioCare",
-        purchaseDate: "2024-04-05",
-      },
-    ],
-    MED008: [
-      {
-        id: 14,
-        batchCode: "B2024-088",
-        quantity: 8,
-        expiry: "2025-04-10",
-        manufacturer: "HeartMeds",
-        purchaseDate: "2024-01-18",
-      },
-    ],
-  };
+  const [batchFormData, setBatchFormData] = useState({
+    batchNumber: "",
+    quantity: "",
+    expiryDate: "",
+  });
+  const [medicineBatches, setMedicineBatches] = useState([]);
 
   // Handle Edit button click
   const handleEditClick = (medicine) => {
@@ -341,22 +231,86 @@ export default function Inventory() {
     setIsEditDialogOpen(true);
   };
 
-  // Handle Batches button click
-  const handleBatchesClick = (medicine) => {
+  // Handle Add Batch button click
+  const handleAddBatchClick = (medicine) => {
     setSelectedMedicine(medicine);
+    setBatchFormData({
+      batchNumber: "",
+      quantity: "",
+      expiryDate: "",
+    });
+    setIsAddBatchDialogOpen(true);
+  };
+
+  // Handle Batches button click
+  const handleBatchesClick = async (medicine) => {
+    setSelectedMedicine(medicine);
+    setMedicineBatches([]);
     setIsBatchesDialogOpen(true);
+
+    // Fetch batches for this medicine
+    try {
+      const response = await getBatchesForMedicine(medicine.id);
+      setMedicineBatches(response.data?.data || []);
+    } catch (error) {
+      console.error("Error fetching batches:", error);
+      setMedicineBatches([]);
+    }
+  };
+
+  // Handle Add Batch form submit
+  const handleAddBatchSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await createBatch({
+        medicineId: selectedMedicine.id,
+        batchNumber: batchFormData.batchNumber,
+        quantity: parseInt(batchFormData.quantity),
+        expiryDate: batchFormData.expiryDate,
+      });
+
+      // Refresh medicines to update stock
+      await fetchMedicines();
+
+      setIsAddBatchDialogOpen(false);
+      setBatchFormData({
+        batchNumber: "",
+        quantity: "",
+        expiryDate: "",
+      });
+      setModalMessage("Batch added successfully!");
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Error adding batch:", error);
+      setModalMessage("Failed to add batch");
+      setShowErrorModal(true);
+    }
   };
 
   // Handle Edit form submit
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
-    setMedicines(
-      medicines.map((med) =>
-        med.id === selectedMedicine.id ? { ...med, ...editFormData } : med
-      )
-    );
-    setIsEditDialogOpen(false);
-    setSelectedMedicine(null);
+    try {
+      await updateMedicine(selectedMedicine.id, {
+        name: editFormData.name,
+        code: editFormData.code,
+        category: editFormData.category,
+        unit: editFormData.unit,
+        minStockLevel: parseInt(editFormData.minStock),
+      });
+
+      // Refresh medicines list
+      await fetchMedicines();
+
+      setIsEditDialogOpen(false);
+      setSelectedMedicine(null);
+      setModalMessage("Medicine updated successfully!");
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Error updating medicine:", error);
+      setModalMessage("Failed to update medicine");
+      setShowErrorModal(true);
+    }
   };
 
   // Create and populate hash table from medicines
@@ -373,94 +327,57 @@ export default function Inventory() {
   const fetchMedicines = async () => {
     setLoading(true);
     try {
-      // Simulated data - replace with actual API call
-      setTimeout(() => {
-        setMedicines([
-          {
-            id: 1,
-            code: "MED001",
-            name: "Paracetamol 500mg",
-            category: "Analgesic",
-            stock: 250,
-            minStock: 50,
-            unit: "Tablet",
-            status: "In Stock",
-          },
-          {
-            id: 2,
-            code: "MED002",
-            name: "Amoxicillin 250mg",
-            category: "Antibiotic",
-            stock: 120,
-            minStock: 40,
-            unit: "Capsule",
-            status: "In Stock",
-          },
-          {
-            id: 3,
-            code: "MED003",
-            name: "Aspirin 100mg",
-            category: "Analgesic",
-            stock: 15,
-            minStock: 30,
-            unit: "Tablet",
-            status: "Low Stock",
-          },
-          {
-            id: 4,
-            code: "MED004",
-            name: "Insulin Glargine",
-            category: "Diabetes",
-            stock: 5,
-            minStock: 10,
-            unit: "Vial",
-            status: "Critical",
-          },
-          {
-            id: 5,
-            code: "MED005",
-            name: "Metformin 500mg",
-            category: "Diabetes",
-            stock: 180,
-            minStock: 60,
-            unit: "Tablet",
-            status: "In Stock",
-          },
-          {
-            id: 6,
-            code: "MED006",
-            name: "Omeprazole 20mg",
-            category: "Gastrointestinal",
-            stock: 95,
-            minStock: 40,
-            unit: "Capsule",
-            status: "In Stock",
-          },
-          {
-            id: 7,
-            code: "MED007",
-            name: "Atorvastatin 10mg",
-            category: "Cardiovascular",
-            stock: 200,
-            minStock: 50,
-            unit: "Tablet",
-            status: "In Stock",
-          },
-          {
-            id: 8,
-            code: "MED008",
-            name: "Lisinopril 5mg",
-            category: "Cardiovascular",
-            stock: 8,
-            minStock: 30,
-            unit: "Tablet",
-            status: "Critical",
-          },
-        ]);
-        setLoading(false);
-      }, 800);
+      const response = await getAllMedicines();
+      console.log("Full API Response:", response);
+      console.log("Response data:", response.data);
+      console.log("Response data.data:", response.data?.data);
+
+      const data = response.data?.data || [];
+      console.log("Extracted medicines array:", data);
+      console.log("Number of medicines:", data.length);
+
+      // Map backend data to frontend format
+      const mapped = data.map((med, index) => {
+        console.log(`Mapping medicine ${index}:`, med);
+        const threshold = med.reorderThreshold || med.minStockLevel || 10;
+        const stock = med.totalStock || 0;
+        const criticalThreshold = threshold * 0.3;
+
+        // Determine status based on stock vs threshold
+        // Critical: < 30% of threshold, Low: 30%-99% of threshold, In Stock: >= threshold
+        let status = "In Stock";
+        if (stock === 0 || stock < criticalThreshold) {
+          status = "Critical";
+        } else if (stock >= criticalThreshold && stock < threshold) {
+          status = "Low Stock";
+        }
+
+        console.log(
+          `  ${med.code}: stock=${stock}, threshold=${threshold}, critical=${criticalThreshold}, status=${status}`
+        );
+
+        return {
+          id: med._id || index + 1,
+          code: med.code,
+          name: med.name,
+          category: med.category,
+          stock: stock,
+          minStock: threshold,
+          unit: med.unit,
+          unitPrice: med.unitPrice || 0,
+          manufacturer: med.manufacturer || "",
+          status: status,
+        };
+      });
+
+      console.log("Final mapped medicines:", mapped);
+      console.log("Setting medicines state with:", mapped.length, "items");
+      setMedicines(mapped);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching medicines:", error);
+      console.error("Error details:", error.response);
+      setMedicines([]);
       setLoading(false);
     }
   };
@@ -489,30 +406,66 @@ export default function Inventory() {
 
   const handleAddMedicine = async (e) => {
     e.preventDefault();
-    // Add medicine to hash table and list
-    const newMed = {
-      id: medicines.length + 1,
-      code: formData.code.toUpperCase(),
-      name: formData.name,
-      category: formData.category,
-      stock: 0,
-      minStock: parseInt(formData.minStockLevel),
-      unit: formData.unit,
-      status: "Low Stock",
-    };
+    try {
+      // Prepare medicine data with initial batch if provided
+      const medicineData = {
+        name: formData.name,
+        code: formData.code.toUpperCase(),
+        category: formData.category,
+        manufacturer: formData.manufacturer,
+        unit: formData.unit,
+        unitPrice: parseFloat(formData.unitPrice) || 0,
+        minStockLevel: parseInt(formData.minStockLevel),
+        maxStockLevel: parseInt(formData.maxStockLevel),
+      };
 
-    setMedicines([...medicines, newMed]);
-    setIsAddDialogOpen(false);
-    // Reset form
-    setFormData({
-      name: "",
-      code: "",
-      category: "",
-      manufacturer: "",
-      unit: "Tablet",
-      minStockLevel: 10,
-      maxStockLevel: 100,
-    });
+      // Add initial batch if user selected to add it
+      if (
+        formData.addBatch &&
+        formData.batchNumber &&
+        formData.batchQuantity &&
+        formData.batchExpiry
+      ) {
+        medicineData.initialBatch = {
+          batchNumber: formData.batchNumber,
+          quantity: parseInt(formData.batchQuantity),
+          expiryDate: formData.batchExpiry,
+        };
+      }
+
+      // Create medicine with optional batch
+      const medicineResponse = await createMedicine(medicineData);
+
+      // Fetch updated list
+      await fetchMedicines();
+
+      setIsAddDialogOpen(false);
+      // Reset form
+      setFormData({
+        name: "",
+        code: "",
+        category: "",
+        manufacturer: "",
+        unit: "Tablet",
+        unitPrice: 0,
+        minStockLevel: 10,
+        maxStockLevel: 100,
+        addBatch: true,
+        batchNumber: "",
+        batchQuantity: "",
+        batchExpiry: "",
+      });
+      setModalMessage(
+        "Medicine" +
+          (formData.addBatch ? " and batch" : "") +
+          " added successfully!"
+      );
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error("Error adding medicine:", error);
+      setModalMessage("Failed to add medicine");
+      setShowErrorModal(true);
+    }
   };
 
   // Filter medicines (O(n) linear search for name, O(1) for code via hash table)
@@ -721,6 +674,13 @@ export default function Inventory() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => handleAddBatchClick(medicine)}
+                      >
+                        Add Batch
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleBatchesClick(medicine)}
                       >
                         Batches
@@ -799,6 +759,22 @@ export default function Inventory() {
                 />
 
                 <Input
+                  label="Unit Price (₹)"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  required
+                  value={formData.unitPrice}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      unitPrice: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                  placeholder="100"
+                />
+
+                <Input
                   label="Min Stock"
                   type="number"
                   required
@@ -807,16 +783,89 @@ export default function Inventory() {
                     setFormData({ ...formData, minStockLevel: e.target.value })
                   }
                 />
+              </div>
 
-                <Input
-                  label="Max Stock"
-                  type="number"
-                  required
-                  value={formData.maxStockLevel}
-                  onChange={(e) =>
-                    setFormData({ ...formData, maxStockLevel: e.target.value })
-                  }
-                />
+              <Input
+                label="Max Stock"
+                type="number"
+                required
+                value={formData.maxStockLevel}
+                onChange={(e) =>
+                  setFormData({ ...formData, maxStockLevel: e.target.value })
+                }
+              />
+
+              {/* Batch Section */}
+              <div className="border-t pt-4 mt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <input
+                    type="checkbox"
+                    id="addBatch"
+                    checked={formData.addBatch}
+                    onChange={(e) =>
+                      setFormData({ ...formData, addBatch: e.target.checked })
+                    }
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <label
+                    htmlFor="addBatch"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Add Initial Batch (Stock)
+                  </label>
+                </div>
+
+                {formData.addBatch && (
+                  <div className="space-y-3 bg-gray-50 p-3 rounded">
+                    <Input
+                      label="Batch Number"
+                      required={formData.addBatch}
+                      value={formData.batchNumber}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          batchNumber: e.target.value,
+                        })
+                      }
+                      placeholder="e.g., BATCH-001"
+                    />
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input
+                        label="Quantity"
+                        type="number"
+                        min="1"
+                        required={formData.addBatch}
+                        value={formData.batchQuantity}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            batchQuantity: e.target.value,
+                          })
+                        }
+                        placeholder="100"
+                      />
+
+                      <Input
+                        label="Expiry Date"
+                        type="date"
+                        required={formData.addBatch}
+                        value={formData.batchExpiry}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            batchExpiry: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+
+                    <p className="text-xs text-gray-500">
+                      💡 Batches help track expiry dates and follow FEFO (First
+                      Expiry, First Out) dispensing
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -918,6 +967,96 @@ export default function Inventory() {
         </DialogContent>
       </Dialog>
 
+      {/* Add Batch Dialog */}
+      <Dialog
+        open={isAddBatchDialogOpen}
+        onOpenChange={setIsAddBatchDialogOpen}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add New Batch</DialogTitle>
+            <DialogDescription>
+              Add a new stock batch for {selectedMedicine?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleAddBatchSubmit}>
+            <div className="space-y-4 px-4 py-3">
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600">Medicine</p>
+                <p className="font-semibold text-gray-900">
+                  {selectedMedicine?.name}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Code: {selectedMedicine?.code} | Current Stock:{" "}
+                  {selectedMedicine?.stock || 0}
+                </p>
+              </div>
+
+              <Input
+                label="Batch Number"
+                required
+                value={batchFormData.batchNumber}
+                onChange={(e) =>
+                  setBatchFormData({
+                    ...batchFormData,
+                    batchNumber: e.target.value,
+                  })
+                }
+                placeholder="e.g., BATCH-001, B2026-001"
+              />
+
+              <Input
+                label="Quantity"
+                type="number"
+                min="1"
+                required
+                value={batchFormData.quantity}
+                onChange={(e) =>
+                  setBatchFormData({
+                    ...batchFormData,
+                    quantity: e.target.value,
+                  })
+                }
+                placeholder="Number of units"
+              />
+
+              <Input
+                label="Expiry Date"
+                type="date"
+                required
+                value={batchFormData.expiryDate}
+                onChange={(e) =>
+                  setBatchFormData({
+                    ...batchFormData,
+                    expiryDate: e.target.value,
+                  })
+                }
+              />
+
+              <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                <p className="text-xs text-green-700">
+                  <strong>💡 Tip:</strong> Batches help track expiry dates. The
+                  system uses FEFO (First Expiry First Out) to automatically
+                  dispense medicines expiring soonest.
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsAddBatchDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">Add Batch</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Batches Dialog */}
       <Dialog open={isBatchesDialogOpen} onOpenChange={setIsBatchesDialogOpen}>
         <DialogContent className="max-w-5xl max-h-[80vh] overflow-y-auto scrollbar-hidden">
@@ -940,28 +1079,23 @@ export default function Inventory() {
               <div className="p-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
                 <p className="text-xs text-gray-600">Total Batches</p>
                 <p className="text-lg font-bold text-gray-600">
-                  {(selectedMedicine &&
-                    batchesData[selectedMedicine.code]?.length) ||
-                    0}
+                  {medicineBatches.length || 0}
                 </p>
               </div>
               <div className="p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
                 <p className="text-xs text-gray-600">Total Stock</p>
                 <p className="text-lg font-bold text-green-600">
-                  {(selectedMedicine &&
-                    batchesData[selectedMedicine.code]?.reduce(
-                      (sum, b) => sum + b.quantity,
-                      0
-                    )) ||
-                    0}
+                  {selectedMedicine?.stock || 0}
                 </p>
               </div>
               <div className="p-3 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200">
                 <p className="text-xs text-gray-600">Earliest Expiry</p>
                 <p className="text-lg font-bold text-amber-600">
-                  {(selectedMedicine &&
-                    batchesData[selectedMedicine.code]?.[0]?.expiry) ||
-                    "N/A"}
+                  {medicineBatches[0]?.expiryDate
+                    ? new Date(
+                        medicineBatches[0].expiryDate
+                      ).toLocaleDateString()
+                    : "N/A"}
                 </p>
               </div>
             </div>
@@ -980,11 +1114,14 @@ export default function Inventory() {
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                  {selectedMedicine &&
-                    batchesData[selectedMedicine.code]
-                      ?.sort((a, b) => new Date(a.expiry) - new Date(b.expiry))
+                  {medicineBatches.length > 0 ? (
+                    medicineBatches
+                      .sort(
+                        (a, b) =>
+                          new Date(a.expiryDate) - new Date(b.expiryDate)
+                      )
                       .map((batch, index) => {
-                        const expiryDate = new Date(batch.expiry);
+                        const expiryDate = new Date(batch.expiryDate);
                         const today = new Date();
                         const daysUntilExpiry = Math.ceil(
                           (expiryDate - today) / (1000 * 60 * 60 * 24)
@@ -1000,7 +1137,7 @@ export default function Inventory() {
                         }
 
                         return (
-                          <Table.Row key={batch.id}>
+                          <Table.Row key={batch._id || batch.id}>
                             <Table.Cell>
                               <div className="flex items-center gap-2">
                                 {index === 0 && (
@@ -1009,17 +1146,23 @@ export default function Inventory() {
                                   </Badge>
                                 )}
                                 <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                                  {batch.batchCode}
+                                  {batch.batchNumber}
                                 </code>
                               </div>
                             </Table.Cell>
                             <Table.Cell className="font-semibold">
                               {batch.quantity}
                             </Table.Cell>
-                            <Table.Cell>{batch.expiry}</Table.Cell>
-                            <Table.Cell>{batch.manufacturer}</Table.Cell>
+                            <Table.Cell>
+                              {new Date(batch.expiryDate).toLocaleDateString()}
+                            </Table.Cell>
+                            <Table.Cell>
+                              {selectedMedicine?.manufacturer || "N/A"}
+                            </Table.Cell>
                             <Table.Cell className="text-gray-500">
-                              {batch.purchaseDate}
+                              {new Date(
+                                batch.receivedDate || batch.createdAt
+                              ).toLocaleDateString()}
                             </Table.Cell>
                             <Table.Cell>
                               <Badge variant={expiryStatus}>
@@ -1028,7 +1171,17 @@ export default function Inventory() {
                             </Table.Cell>
                           </Table.Row>
                         );
-                      })}
+                      })
+                  ) : (
+                    <Table.Row>
+                      <Table.Cell
+                        colSpan={6}
+                        className="text-center text-gray-500"
+                      >
+                        No batches found for this medicine
+                      </Table.Cell>
+                    </Table.Row>
+                  )}
                 </Table.Body>
               </Table>
             </div>
@@ -1329,6 +1482,53 @@ public:
               </div>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3 text-success text-xl">
+              <div className="w-10 h-10 rounded-full bg-success-light flex items-center justify-center">
+                <Package className="w-6 h-6 text-success" />
+              </div>
+              Success
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-text-primary text-base py-4">{modalMessage}</p>
+          <DialogFooter className="mt-2">
+            <Button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full"
+            >
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Error Modal */}
+      <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3 text-error text-xl">
+              <div className="w-10 h-10 rounded-full bg-error-light flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-error" />
+              </div>
+              Error
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-text-primary text-base py-4">{modalMessage}</p>
+          <DialogFooter className="mt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowErrorModal(false)}
+              className="w-full"
+            >
+              Close
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

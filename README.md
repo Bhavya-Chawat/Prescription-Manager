@@ -1,231 +1,220 @@
-# PharmaDSA - Priority-Driven Pharmacy Management System
+# Pharmacy Management System
 
-![Production Ready](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
-![License](https://img.shields.io/badge/License-MIT-blue)
-![Node](https://img.shields.io/badge/Node-v18+-green)
-![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green)
+A production-ready full-stack pharmacy system demonstrating core data structures and algorithms with real-world applications.
 
-A production-ready pharmacy management system built with MERN stack, demonstrating practical applications of Data Structures & Algorithms in healthcare.
-
-## 🌟 Key Features
-
-- **🔐 Role-Based Access Control** - Admin, Pharmacist, Viewer roles with JWT authentication
-- **☁️ Cloud-Ready** - MongoDB Atlas integration, scalable architecture
-- **⚡ Performance Optimized** - O(1) medicine lookups, O(log n) queue operations
-- **🔒 Audit Trail** - Immutable blockchain-like hash chain for compliance
-- **📱 Responsive Design** - Works on desktop, tablet, and mobile
-- **🎨 Professional UI** - Clean, hospital-grade interface
-
-## 🎨 Design System
-
-- **Primary Green**: `#2F6F4E` (pharmacy green)
-- **Warning Amber**: `#C56A1A`
-- **Typography**: Inter font family
-- **Style**: Clean, professional, hospital-grade aesthetic
-- **No gradients, no flashy animations**
-
-## 🏗️ Tech Stack
-
-### Backend
-
-- Node.js + Express.js
-- MongoDB Atlas (Cloud Database)
-- Mongoose ODM
-- JWT Authentication
-- Zod Validation
-- bcryptjs Password Hashing
-
-### Frontend
-
-- React 18 + Vite
-- Tailwind CSS (Custom Pharmacy Theme)
-- Zustand (State Management)
-- Axios (HTTP Client)
-- Lucide React (Icons)
-
-## 📦 Quick Start
-
-### Prerequisites
-
-- Node.js v18+
-- MongoDB Atlas account (free tier)
-
-### Setup
-
-1. **Clone or extract the project**
-
-```powershell
-cd "c:\Users\bhavy\OneDrive\Desktop\Projects\Prescription Manager\server"
-```
-
-2. **Install dependencies**
-
-```powershell
-npm install
-```
-
-3. **Build frontend**
-
-```powershell
-npm run build
-```
-
-4. **Create MongoDB Atlas cluster** (see [SETUP.md](SETUP.md) for detailed steps)
-
-   - Sign up at https://www.mongodb.com/cloud/atlas
-   - Create free M0 cluster
-   - Create database user
-   - Allow network access (0.0.0.0/0 for dev)
-   - Get connection string
-
-5. **Configure environment**
-
-```powershell
-Copy-Item .env.example .env
-notepad .env
-```
-
-Update with your MongoDB Atlas connection:
-
-```env
-MONGODB_URI=your_mongodb_atlas_connection_string_here
-JWT_SECRET=your_jwt_secret_here
-PORT=5000
-```
-
-6. **Seed database**
-
-```powershell
-npm run seed
-```
-
-7. **Start application**
-
-```powershell
-npm start
-```
-
-Visit: http://localhost:5000
-
-### Test Credentials
-
-- Admin: `admin` / `admin123`
-- Pharmacist: `pharmacist` / `pharma123`
-- Viewer: `viewer` / `view123`
-
-## 📚 Documentation
-
-- **[SETUP.md](SETUP.md)** - Complete setup guide with MongoDB Atlas instructions
-- **[docs/PHASE-1-ARCHITECTURE.md](docs/PHASE-1-ARCHITECTURE.md)** - System architecture and DSA implementations
-- **[docs/PHASE-2-UI-UX-DESIGN.md](docs/PHASE-2-UI-UX-DESIGN.md)** - UI/UX design specifications
-
-## 🗂️ Project Structure
-
-```
-Prescription Manager/
-├── server/                    # Backend (serves integrated app)
-│   ├── src/
-│   │   ├── models/           # 10 MongoDB models
-│   │   ├── middleware/       # Auth, validation, error handling
-│   │   ├── utils/            # Helpers and utilities
-│   │   └── scripts/
-│   │       └── seed.js       # Database seeding
-│   ├── server.js             # Main entry (serves frontend)
-│   └── package.json
-├── client/                    # React frontend
-│   ├── src/
-│   │   ├── components/       # UI components (9 professional components)
-│   │   ├── pages/            # Page components
-│   │   ├── stores/           # Zustand state management
-│   │   └── services/         # API services
-│   ├── dist/                 # Built frontend (served by backend)
-│   └── tailwind.config.js    # Custom pharmacy design system
-└── docs/                      # Architecture documentation
-```
-
-## 🎯 Data Structures & Algorithms
-
-### Implemented
-
-1. **Hash Tables** - O(1) medicine lookup by ID/barcode
-2. **Linked Lists** - Prescription item chaining
-3. **Priority Queues (Min-Heap)** - Patient urgency handling
-4. **FIFO Queues** - Fair prescription processing
-5. **Greedy Algorithms** - Stock allocation (first-expiry-first-out)
-6. **Append-Only Logs** - Immutable audit trail
-
-### Code Locations
-
-See [docs/PHASE-1-ARCHITECTURE.md](docs/PHASE-1-ARCHITECTURE.md) for detailed implementations with code examples.
-
-## 🔧 NPM Scripts
-
-```powershell
-npm start         # Start production server
-npm run dev       # Start with auto-reload (nodemon)
-npm run build     # Build and integrate frontend
-npm run seed      # Populate database with test data
-npm test          # Run tests
-```
-
-## 🌐 Deployment
-
-Ready to deploy on:
-
-- Render (recommended)
-- Heroku
-- Railway
-- Fly.io
-- DigitalOcean App Platform
-
-**Steps:**
-
-1. Push to GitHub
-2. Connect repository to hosting platform
-3. Set environment variables: `MONGODB_URI`, `JWT_SECRET`, `PORT`
-4. Deploy!
-
-MongoDB Atlas works with all cloud platforms - no local database needed.
-
-## 📱 Core Features
-
-- ✅ **Dashboard** - Metrics and system overview
-- 🚧 **Inventory** - Medicine stock management with CRUD operations
-- 🚧 **Prescriptions** - Prescription entry and management
-- 🚧 **Queue** - Priority-based patient queue (min-heap)
-- 🚧 **Dispense** - Medicine dispensing with greedy allocation
-- 🚧 **History** - Audit trail with append-only logs
-- ✅ **Authentication** - JWT-based with role-based access
-
-Legend: ✅ Complete | 🚧 In Progress
-
-## 🎓 Academic Use
-
-This project demonstrates:
-
-- Full-stack web development (MERN)
-- RESTful API design
-- Database schema design (10 collections)
-- Professional UI/UX implementation
-- Data Structures & Algorithms in real applications
-- Production deployment practices
-
-## 📞 Support
-
-For issues, check:
-
-1. MongoDB Atlas dashboard connectivity
-2. Server logs in terminal
-3. Browser console (F12) for frontend errors
-4. [SETUP.md](SETUP.md) troubleshooting section
-
-## 🙏 Acknowledgments
-
-- Designed with pharmacy workflow best practices
-- Color scheme: Professional pharmacy green and amber
-- No blue, teal, indigo, purple, gradients, or flashy animations
-- Hospital-grade, auditable, deployment-ready
+**Status**: Production Ready | **License**: MIT | **Node**: 18+ | **Database**: MongoDB
 
 ---
 
-**Built with ❤️ for modern pharmacy management**
+## 🎯 Core Features
+
+| Feature             | Algorithm                    | Time Complexity |
+| ------------------- | ---------------------------- | --------------- |
+| Queue Management    | Min-Heap (Priority Queue)    | O(log n)        |
+| Dispense Allocation | Greedy FEFO                  | O(n log n)      |
+| Inventory Lookup    | Hash Table                   | O(1)            |
+| Audit Trail         | Append-Only Log + Hash Chain | O(1) append     |
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- MongoDB (local or Atlas)
+
+### Installation
+
+```bash
+# Backend setup
+cd server
+npm install
+npm run seed
+
+# Frontend setup
+cd ../client
+npm install
+
+# Start
+npm start          # Backend: http://localhost:5000
+npm run dev        # Frontend: http://localhost:5173
+```
+
+### Login Credentials
+
+| Role       | Username   | Password  |
+| ---------- | ---------- | --------- |
+| Admin      | admin      | admin123  |
+| Pharmacist | pharmacist | pharma123 |
+| Viewer     | viewer     | view123   |
+
+---
+
+## 📚 Documentation
+
+See the [docs/](docs/) folder:
+
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - System design & DSA implementations
+- **[DATABASE.md](docs/DATABASE.md)** - MongoDB schema reference
+- **[API.md](docs/API.md)** - REST API endpoints
+
+---
+
+## 📦 Project Structure
+
+```
+client/
+├── src/
+│   ├── pages/           # Dashboard, Queue, Dispense, Inventory, History
+│   ├── components/      # UI & layout components
+│   ├── services/        # API clients
+│   └── store/           # Zustand auth state
+└── index.html
+
+server/
+├── src/
+│   ├── models/          # 10 MongoDB schemas
+│   ├── controllers/     # API handlers
+│   ├── services/        # Business logic
+│   ├── routes/          # Endpoints
+│   ├── dsa/             # Data structures
+│   ├── middleware/      # Auth, validation, logging
+│   └── utils/           # Helpers
+├── scripts/
+│   └── seed.js          # Database seeding
+└── server.js
+
+docs/
+├── ARCHITECTURE.md
+├── DATABASE.md
+└── API.md
+```
+
+---
+
+## 🏗️ Tech Stack
+
+**Backend**: Node.js, Express, MongoDB, Mongoose  
+**Frontend**: React 18, Vite, Tailwind CSS, Zustand  
+**DSA**: Min-Heap, Hash Table, Linked List, FEFO Greedy, Hash Chain
+
+---
+
+## 🔬 Key Implementations
+
+### Data Structures
+
+- **Min-Heap** - Priority queue (Emergency → High → Normal → Low)
+- **Hash Table** - O(1) medicine lookup
+- **Linked List** - Prescription items chaining
+- **FIFO Queue** - Fair prescription ordering
+
+### Algorithms
+
+- **Greedy FEFO** - First-Expiry-First-Out batch allocation
+- **Min-Heap Operations** - Insert, extract-min, heapify
+- **Hash Chain** - Tamper-proof audit trail verification
+
+---
+
+## 📊 Database Models
+
+1. **User** - Authentication & roles
+2. **Patient** - Demographics
+3. **Medicine** - Catalog & pricing
+4. **Batch** - Stock tracking with expiry
+5. **Prescription** - Patient orders
+6. **QueueEntry** - Priority queue
+7. **Dispense** - Fulfillment records
+8. **Bill** - Payment tracking
+9. **AuditLog** - Immutable history
+10. **Supplier** - Medicine sources
+
+---
+
+## ⚙️ Environment Configuration
+
+Create `server/.env`:
+
+```env
+MONGODB_URI=mongodb://localhost:27017/pharmacy
+JWT_SECRET=your_secret_key
+PORT=5000
+```
+
+For MongoDB Atlas:
+
+```
+MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/pharmacy
+```
+
+---
+
+## 🧪 Seed Data
+
+```bash
+cd server
+npm run seed
+```
+
+Creates:
+
+- 10 unique patients
+- 6 medicines with realistic stock levels
+- 10 prescriptions (5 queued, 5 dispensed with bills)
+- Sample dispense records
+
+---
+
+## 📖 Core Workflows
+
+### 1. Create Prescription
+
+Patient prescription → Auto-queued by priority → Added to Min-Heap
+
+### 2. Process Queue
+
+Min-Heap sorted → Call next → Dispense
+
+### 3. Dispense Medicine
+
+Search prescription → Greedy FEFO allocation → Auto-bill → Update inventory
+
+### 4. View History
+
+All records logged → Hash chain verified → Tamper detection
+
+---
+
+## ✨ Key Features
+
+✅ **Real-time Dashboard** - Stock alerts, revenue, queue metrics  
+✅ **Auto-queue** - Prescriptions automatically prioritized  
+✅ **FEFO Allocation** - Minimizes medicine wastage  
+✅ **Immutable Audit** - Blockchain-like hash chain  
+✅ **Role-based Access** - Admin, Pharmacist, Viewer  
+✅ **Responsive UI** - Professional pharmacy interface  
+✅ **Production Ready** - Error handling, validation, logging
+
+---
+
+## 🛠️ NPM Scripts
+
+```bash
+npm start              # Start backend (dev mode with nodemon)
+npm run seed           # Populate database
+cd ../client
+npm run dev            # Start frontend (Vite)
+npm run build          # Production build
+```
+
+---
+
+## 📄 License
+
+MIT
+
+---
+
+**Built with** ❤️ for healthcare management

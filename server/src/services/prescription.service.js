@@ -48,7 +48,10 @@ async function createPrescription({
 }
 
 async function getPrescription(id) {
-  return Prescription.findById(id).lean();
+  return Prescription.findById(id)
+    .populate("patientId", "name age gender")
+    .populate("items.medicineId", "name category dosage")
+    .lean();
 }
 
 async function getAllPrescriptions() {

@@ -21,7 +21,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "../components/ui/Dialog";
+import { snapshot, callNext } from "../services/queueApi";
 
 // ============================================
 // DSA: MIN-HEAP PRIORITY QUEUE IMPLEMENTATION
@@ -270,6 +272,8 @@ export default function Queue() {
   const [showDSAModal, setShowDSAModal] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(null);
   const [operationLog, setOperationLog] = useState([]);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Create Min-Heap from queue items
   const priorityQueue = useMemo(() => {
@@ -290,101 +294,64 @@ export default function Queue() {
   const fetchQueue = async () => {
     setLoading(true);
     try {
-      setTimeout(() => {
-        setQueueItems([
-          {
-            id: 1,
-            queueNumber: "Q001",
-            prescriptionId: "PRX-2026-001",
-            patientName: "John Doe",
-            priority: "Emergency",
-            waitTime: "5 min",
-            items: 3,
-            addedAt: new Date("2026-01-02T10:30:00"),
-          },
-          {
-            id: 2,
-            queueNumber: "Q002",
-            prescriptionId: "PRX-2026-002",
-            patientName: "Jane Smith",
-            priority: "High",
-            waitTime: "12 min",
-            items: 2,
-            addedAt: new Date("2026-01-02T10:35:00"),
-          },
-          {
-            id: 3,
-            queueNumber: "Q003",
-            prescriptionId: "PRX-2026-003",
-            patientName: "Robert Johnson",
-            priority: "Normal",
-            waitTime: "18 min",
-            items: 4,
-            addedAt: new Date("2026-01-02T10:42:00"),
-          },
-          {
-            id: 4,
-            queueNumber: "Q004",
-            prescriptionId: "PRX-2026-004",
-            patientName: "Emily Davis",
-            priority: "Low",
-            waitTime: "25 min",
-            items: 1,
-            addedAt: new Date("2026-01-02T10:48:00"),
-          },
-        ]);
-        setLoading(false);
-      }, 800);
+      const response = await snapshot();
+      console.log("Full API Response:", response);
+      const data = response.data?.data || [];
+      console.log("Queue data (nested by priority):", data);
+
+      // Flatten the priority lanes into a single array
+      const flatData = data.flat();
+      console.log("Flattened queue data:", flatData);
+
+      const priorityNames = ["Emergency", "High", "Normal", "Low"];
+
+      const mapped = flatData.map((item, index) => {
+        console.log(`Mapping item ${index}:`, item);
+        console.log(`  prescriptionId:`, item.prescriptionId);
+        console.log(`  patientId:`, item.prescriptionId?.patientId);
+        console.log(`  patient name:`, item.prescriptionId?.patientId?.name);
+
+        return {
+          id: item._id,
+          queueNumber: `Q${String(index + 1).padStart(3, "0")}`,
+          prescriptionId:
+            item.prescriptionId?.prescriptionId ||
+            item.prescriptionId?._id?.slice(-8) ||
+            "N/A",
+          fullPrescriptionId: item.prescriptionId?._id || item.prescriptionId,
+          patientName: item.prescriptionId?.patientId?.name || "Unknown",
+          priority: priorityNames[item.priority] || "Normal",
+          items: item.prescriptionId?.items?.length || 0,
+          addedAt: new Date(item.createdAt),
+        };
+      });
+
+      console.log("Mapped queue items:", mapped);
+      setQueueItems(mapped);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching queue:", error);
+      setQueueItems([]);
       setLoading(false);
     }
   };
 
-  // Add new patient to queue (demonstrates O(log n) insertion)
-  const handleAddToQueue = () => {
-    const priorities = ["Emergency", "High", "Normal", "Low"];
-    const randomPriority =
-      priorities[Math.floor(Math.random() * priorities.length)];
-    const newItem = {
-      id: Date.now(),
-      queueNumber: `Q${String(queueItems.length + 1).padStart(3, "0")}`,
-      prescriptionId: `PRX-2026-${String(queueItems.length + 1).padStart(
-        3,
-        "0"
-      )}`,
-      patientName: `Patient ${queueItems.length + 1}`,
-      priority: randomPriority,
-      waitTime: "0 min",
-      items: Math.floor(Math.random() * 5) + 1,
-      addedAt: new Date(),
-    };
-
-    setQueueItems([...queueItems, newItem]);
-    setOperationLog([
-      {
-        time: new Date().toLocaleTimeString(),
-        action: `INSERT`,
-        detail: `Added ${newItem.queueNumber} (${randomPriority}) - O(log n)`,
-      },
-      ...operationLog.slice(0, 4),
-    ]);
-
-    // Highlight animation
-    setHighlightedIndex(queueItems.length);
-    setTimeout(() => setHighlightedIndex(null), 1500);
-  };
-
   // Process next patient (demonstrates O(log n) extract-min)
-  const handleProcessNext = () => {
+  const handleProcessNext = async () => {
     if (sortedQueue.length === 0) return;
 
     const next = sortedQueue[0];
+
+    // Confirm before processing
+    if (!window.confirm(`Process prescription for ${next.patientName}?`)) {
+      return;
+    }
+
     setOperationLog([
       {
         time: new Date().toLocaleTimeString(),
         action: `EXTRACT-MIN`,
-        detail: `Processed ${next.queueNumber} (${next.priority}) - O(log n)`,
+        detail: `Processing ${next.queueNumber} (${next.priority}) - O(log n)`,
       },
       ...operationLog.slice(0, 4),
     ]);
@@ -392,10 +359,31 @@ export default function Queue() {
     // Highlight root before removal
     setHighlightedIndex(0);
 
-    setTimeout(() => {
-      setQueueItems(queueItems.filter((item) => item.id !== next.id));
+    try {
+      const response = await callNext();
+      console.log("Call next response:", response);
+
+      const calledEntry = response.data?.data;
+      if (calledEntry && calledEntry.prescriptionId) {
+        // Navigate to dispense page with prescription ID
+        const prescriptionId =
+          calledEntry.prescriptionId._id || calledEntry.prescriptionId;
+        window.location.href = `/dispense?prescriptionId=${prescriptionId}`;
+      } else {
+        // Just refresh the queue if navigation info not available
+        setTimeout(() => {
+          fetchQueue();
+          setHighlightedIndex(null);
+        }, 1000);
+      }
+    } catch (error) {
+      console.error("Error calling next:", error);
+      setErrorMessage(
+        "Failed to process next patient: " + (error.message || "Unknown error")
+      );
+      setShowErrorModal(true);
       setHighlightedIndex(null);
-    }, 1000);
+    }
   };
 
   const getPriorityBadge = (priority) => {
@@ -445,10 +433,6 @@ export default function Queue() {
           <Button variant="outline" onClick={() => setShowDSAModal(true)}>
             <AlertTriangle className="w-4 h-4 mr-2" />
             View Algorithm
-          </Button>
-          <Button variant="outline" onClick={handleAddToQueue}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Patient
           </Button>
           <Button
             onClick={handleProcessNext}
@@ -604,13 +588,6 @@ export default function Queue() {
                     </div>
 
                     <div className="text-right">
-                      <p className="text-sm text-text-muted">Wait Time</p>
-                      <p className="font-medium text-text-primary mt-1">
-                        {item.waitTime}
-                      </p>
-                    </div>
-
-                    <div className="text-right">
                       <p className="text-sm text-text-muted">Items</p>
                       <p className="font-medium text-text-primary mt-1">
                         {item.items}
@@ -620,17 +597,10 @@ export default function Queue() {
                     <Button
                       size="sm"
                       onClick={() => {
-                        setOperationLog([
-                          {
-                            time: new Date().toLocaleTimeString(),
-                            action: `EXTRACT-MIN`,
-                            detail: `Processed ${item.queueNumber} (${item.priority}) - O(log n)`,
-                          },
-                          ...operationLog.slice(0, 4),
-                        ]);
-                        setQueueItems(
-                          queueItems.filter((q) => q.id !== item.id)
-                        );
+                        // Navigate to dispense page with full prescription ID
+                        if (item.fullPrescriptionId) {
+                          window.location.href = `/dispense?prescriptionId=${item.fullPrescriptionId}`;
+                        }
                       }}
                     >
                       Process
@@ -1035,6 +1005,30 @@ public:
               </div>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Error Modal */}
+      <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3 text-error text-xl">
+              <div className="w-10 h-10 rounded-full bg-error-light flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-error" />
+              </div>
+              Error
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-text-primary text-base py-4">{errorMessage}</p>
+          <DialogFooter className="mt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowErrorModal(false)}
+              className="w-full"
+            >
+              Close
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

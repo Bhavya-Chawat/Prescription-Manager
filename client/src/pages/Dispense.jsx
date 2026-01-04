@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Package,
   Search,
@@ -8,6 +9,7 @@ import {
   EyeOff,
   Play,
   ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
@@ -20,7 +22,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "../components/ui/Dialog";
+import { processDispense } from "../services/dispenseApi";
+import { getPrescription } from "../services/prescriptionApi";
 
 // ============================================
 // DSA: GREEDY FEFO ALGORITHM IMPLEMENTATION
@@ -174,71 +179,94 @@ function FEFOVisualizer({ batches, allocation, showSteps }) {
 }
 
 export default function Dispense() {
-  const [prescriptionId, setPrescriptionId] = useState("");
+  const [searchParams] = useSearchParams();
+  const [prescriptionId, setPrescriptionId] = useState(
+    searchParams.get("prescriptionId") || ""
+  );
   const [prescription, setPrescription] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showDSAModal, setShowDSAModal] = useState(false);
+  const [dispenseResult, setDispenseResult] = useState(null);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
-  // Sample batch data for visualization
-  const sampleBatches = useMemo(
-    () => ({
-      "Paracetamol 500mg": [
-        { id: 1, code: "B2024-001", expiry: "2025-03-15", available: 50 },
-        { id: 2, code: "B2024-023", expiry: "2025-06-20", available: 100 },
-        { id: 3, code: "B2024-045", expiry: "2025-12-31", available: 150 },
-      ],
-      "Amoxicillin 250mg": [
-        { id: 4, code: "B2024-012", expiry: "2025-05-10", available: 30 },
-        { id: 5, code: "B2024-067", expiry: "2025-08-25", available: 80 },
-      ],
-      "Aspirin 100mg": [
-        { id: 6, code: "B2024-034", expiry: "2025-02-28", available: 10 },
-        { id: 7, code: "B2024-089", expiry: "2025-11-15", available: 5 },
-      ],
-    }),
-    []
-  );
+  // Auto-load if prescriptionId from URL
+  React.useEffect(() => {
+    const urlPrescriptionId = searchParams.get("prescriptionId");
+    if (urlPrescriptionId) {
+      setPrescriptionId(urlPrescriptionId);
+      handleLoadPrescription(urlPrescriptionId);
+    }
+  }, [searchParams]);
+
+  const handleLoadPrescription = async (id) => {
+    if (!id || !id.trim()) {
+      setModalMessage("Please enter a prescription ID");
+      setShowErrorModal(true);
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await getPrescription(id);
+      const data = response.data?.data;
+      if (data) {
+        setPrescription(data);
+      } else {
+        setModalMessage("Prescription not found");
+        setShowErrorModal(true);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error("Error loading prescription:", error);
+      setModalMessage(
+        "Failed to load prescription: " +
+          (error.response?.data?.message || error.message)
+      );
+      setShowErrorModal(true);
+      setLoading(false);
+    }
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    // Simulated search with FEFO allocation
-    setTimeout(() => {
-      const prescribedItems = [
-        { id: 1, medicine: "Paracetamol 500mg", prescribed: 30 },
-        { id: 2, medicine: "Amoxicillin 250mg", prescribed: 20 },
-        { id: 3, medicine: "Aspirin 100mg", prescribed: 15 },
-      ];
-
-      // Apply FEFO allocation to each item
-      const itemsWithAllocation = prescribedItems.map((item) => {
-        const batches = sampleBatches[item.medicine] || [];
-        const allocation = greedyFEFOAllocation(item.prescribed, batches);
-        return {
-          ...item,
-          batches,
-          allocation,
-          status: allocation.isFullyAllocated ? "Available" : "Partial",
-        };
-      });
-
-      setPrescription({
-        id: prescriptionId || "PRX-2026-001",
-        patientName: "John Doe",
-        doctor: "Dr. Sarah Wilson",
-        department: "General Medicine",
-        priority: "High",
-        items: itemsWithAllocation,
-      });
-      setLoading(false);
-    }, 800);
+    handleLoadPrescription(prescriptionId);
   };
 
-  const handleDispense = () => {
-    alert("Dispensing prescription with FEFO-allocated stock...");
-    setPrescription(null);
-    setPrescriptionId("");
+  const handleDispense = async () => {
+    if (!prescription) return;
+    setShowConfirmModal(true);
+  };
+
+  const confirmDispense = async () => {
+    setShowConfirmModal(false);
+    setLoading(true);
+    try {
+      const response = await processDispense(prescription._id);
+      setDispenseResult(response.data?.data);
+      setModalMessage(
+        "Prescription dispensed successfully! Bill created. Redirecting to history..."
+      );
+      setShowSuccessModal(true);
+      setLoading(false);
+
+      // Reset for next prescription and redirect after 2 seconds
+      setPrescription(null);
+      setPrescriptionId("");
+
+      setTimeout(() => {
+        window.location.href = "/history";
+      }, 2000);
+    } catch (error) {
+      console.error("Error dispensing:", error);
+      setModalMessage(
+        "Failed to dispense: " +
+          (error.response?.data?.message || error.message)
+      );
+      setShowErrorModal(true);
+      setLoading(false);
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -272,50 +300,23 @@ export default function Dispense() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card hover>
-          <Card.Body className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Today's Dispensed</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">47</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-white" />
-              </div>
+      {/* Info Banner */}
+      <Card>
+        <Card.Body className="p-4 bg-blue-50 border-l-4 border-blue-500">
+          <div className="flex items-center gap-3">
+            <CheckCircle className="w-5 h-5 text-blue-600" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">
+                FEFO (First-Expiry-First-Out) Dispensing
+              </p>
+              <p className="text-xs text-gray-600 mt-1">
+                Medicines are automatically allocated from batches with earliest
+                expiry dates to minimize wastage
+              </p>
             </div>
-          </Card.Body>
-        </Card>
-
-        <Card hover>
-          <Card.Body className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Pending</p>
-                <p className="text-2xl font-bold text-warning mt-1">8</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center">
-                <AlertCircle className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </Card.Body>
-        </Card>
-
-        <Card hover>
-          <Card.Body className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Wastage Saved</p>
-                <p className="text-2xl font-bold text-success mt-1">₹12.5K</p>
-              </div>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center">
-                <Package className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </Card.Body>
-        </Card>
-      </div>
+          </div>
+        </Card.Body>
+      </Card>
 
       {/* Algorithm Info */}
       <Card>
@@ -375,12 +376,40 @@ export default function Dispense() {
       {/* Prescription Details */}
       {prescription ? (
         <div className="space-y-4">
+          {/* Data Quality Warning */}
+          {(!prescription.patientId?.name ||
+            prescription.items?.some((item) => !item.medicineId?.name)) && (
+            <Card>
+              <Card.Body className="p-4 bg-yellow-50 border-l-4 border-yellow-500">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      Incomplete Data
+                    </p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Some patient or medicine details are missing. This may be
+                      from older prescriptions. The system will still process
+                      the dispense.
+                    </p>
+                  </div>
+                </div>
+              </Card.Body>
+            </Card>
+          )}
+
           {/* Patient Info */}
           <Card>
             <Card.Header>
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-medium">Prescription Details</h2>
-                <Badge variant="info">{prescription.priority} Priority</Badge>
+                <Badge
+                  variant={
+                    prescription.status === "queued" ? "info" : "success"
+                  }
+                >
+                  {prescription.status || "Pending"}
+                </Badge>
               </div>
             </Card.Header>
             <Card.Body>
@@ -389,103 +418,71 @@ export default function Dispense() {
                   <p className="text-sm text-text-muted">Prescription ID</p>
                   <p className="font-medium text-text-primary mt-1">
                     <code className="text-xs bg-info-light px-2 py-1 rounded">
-                      {prescription.id}
+                      {prescription._id?.slice(-8).toUpperCase() || "N/A"}
                     </code>
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-text-muted">Patient Name</p>
                   <p className="font-medium text-text-primary mt-1">
-                    {prescription.patientName}
+                    {prescription.patientId?.name ||
+                      prescription.patientName || (
+                        <span className="text-gray-400 italic">
+                          Not Available
+                        </span>
+                      )}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-text-muted">Doctor</p>
                   <p className="font-medium text-text-primary mt-1">
-                    {prescription.doctor}
+                    {prescription.doctor || "N/A"}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-text-muted">Department</p>
                   <p className="font-medium text-text-primary mt-1">
-                    {prescription.department}
+                    {prescription.department || "N/A"}
                   </p>
                 </div>
               </div>
             </Card.Body>
           </Card>
 
-          {/* Items to Dispense with FEFO visualization */}
-          {prescription.items.map((item) => (
-            <Card key={item.id}>
-              <Card.Header>
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-medium">{item.medicine}</h2>
-                  {getStatusBadge(item.status)}
-                </div>
-              </Card.Header>
-              <Card.Body className="space-y-4">
-                {/* Basic info */}
-                <div className="grid grid-cols-3 gap-4 bg-app-bg rounded p-3">
-                  <div>
-                    <p className="text-xs text-text-muted">Prescribed</p>
-                    <p className="text-lg font-semibold text-text-primary mt-1">
-                      {item.prescribed}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-text-muted">Total Available</p>
-                    <p className="text-lg font-semibold text-info mt-1">
-                      {item.batches.reduce((sum, b) => sum + b.available, 0)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-text-muted">Allocated (FEFO)</p>
-                    <p className="text-lg font-semibold text-success mt-1">
-                      {item.allocation.totalAllocated}
-                    </p>
-                  </div>
-                </div>
-
-                {item.status === "Partial" && (
-                  <div className="flex items-center gap-2 text-warning text-sm p-3 bg-warning-light rounded">
-                    <AlertCircle className="w-4 h-4" />
-                    <span>
-                      Only {item.allocation.totalAllocated} of {item.prescribed}{" "}
-                      units available (short by {item.allocation.remaining})
-                    </span>
-                  </div>
-                )}
-              </Card.Body>
-            </Card>
-          ))}
-
-          {/* Allocation Summary */}
+          {/* Items to Dispense */}
           <Card>
-            <Card.Body className="p-4 bg-gradient-to-br from-info/5 to-blue-500/10 border border-info/20">
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-full bg-info/20 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-6 h-6 text-info" />
-                </div>
-                <div>
-                  <p className="font-semibold text-text-primary text-lg">
-                    Greedy FEFO Allocation Complete
-                  </p>
-                  <p className="text-sm text-text-secondary mt-2 leading-relaxed">
-                    Stock allocated from batches with earliest expiry dates
-                    first. Total items: {prescription.items.length} • Fully
-                    available:{" "}
-                    {
-                      prescription.items.filter((i) => i.status === "Available")
-                        .length
-                    }{" "}
-                    • Partial:{" "}
-                    {
-                      prescription.items.filter((i) => i.status === "Partial")
-                        .length
-                    }
-                  </p>
-                </div>
+            <Card.Header>
+              <h2 className="text-lg font-medium">Medicines to Dispense</h2>
+            </Card.Header>
+            <Card.Body>
+              <div className="space-y-3">
+                {prescription.items?.map((item, index) => (
+                  <div
+                    key={item._id || `item-${index}`}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">
+                        {item.medicineId?.name || (
+                          <span>
+                            <span className="text-gray-400 italic">
+                              Medicine ID:{" "}
+                            </span>
+                            <code className="text-xs bg-gray-200 px-2 py-0.5 rounded">
+                              {typeof item.medicineId === "string"
+                                ? item.medicineId.slice(-8).toUpperCase()
+                                : item.medicineId}
+                            </code>
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Dosage: {item.dosage} • Quantity: {item.quantity}
+                      </p>
+                    </div>
+                    <Badge variant="info">Pending</Badge>
+                  </div>
+                )) || <p className="text-gray-500">No items</p>}
               </div>
             </Card.Body>
           </Card>
@@ -503,12 +500,43 @@ export default function Dispense() {
             </Button>
             <Button
               onClick={handleDispense}
+              loading={loading}
               className="bg-gradient-to-r from-success to-green-600 hover:from-success/90 hover:to-green-700"
             >
               <CheckCircle className="w-4 h-4 mr-2" />
               Complete Dispensing
             </Button>
           </div>
+
+          {dispenseResult && (
+            <Card>
+              <Card.Header>
+                <h2 className="text-lg font-medium text-success">
+                  Dispensing Complete!
+                </h2>
+              </Card.Header>
+              <Card.Body>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">
+                    Status:{" "}
+                    {dispenseResult.dispense?.status === "full"
+                      ? "Fully Dispensed"
+                      : "Partially Dispensed"}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Bill Total: ₹{dispenseResult.bill?.total || 0}
+                  </p>
+                  {dispenseResult.dispense?.backorderItems?.length > 0 && (
+                    <div className="mt-2 p-2 bg-warning-light rounded">
+                      <p className="text-sm text-warning font-medium">
+                        Some items were out of stock
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </Card.Body>
+            </Card>
+          )}
         </div>
       ) : (
         !loading && (
@@ -517,7 +545,7 @@ export default function Dispense() {
               <EmptyState
                 icon={Package}
                 title="Search for a Prescription"
-                description="Enter a prescription ID above or click Search to see the FEFO algorithm in action"
+                description="Enter a prescription ID above to load and dispense medicines"
               />
             </Card.Body>
           </Card>
@@ -910,6 +938,80 @@ int main() {
               </div>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Modal */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3 text-success text-xl">
+              <div className="w-10 h-10 rounded-full bg-success-light flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-success" />
+              </div>
+              Success
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-text-primary text-base py-4">{modalMessage}</p>
+          <DialogFooter className="mt-2">
+            <Button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full"
+            >
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Error Modal */}
+      <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3 text-error text-xl">
+              <div className="w-10 h-10 rounded-full bg-error-light flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-error" />
+              </div>
+              Error
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-text-primary text-base py-4">{modalMessage}</p>
+          <DialogFooter className="mt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowErrorModal(false)}
+              className="w-full"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Modal */}
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              Confirm Dispensing
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-text-primary text-base py-4">
+            Dispense prescription for{" "}
+            <strong>{prescription?.patientId?.name || "patient"}</strong>?
+          </p>
+          <DialogFooter className="mt-2 gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmModal(false)}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button onClick={confirmDispense} className="flex-1">
+              Confirm
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

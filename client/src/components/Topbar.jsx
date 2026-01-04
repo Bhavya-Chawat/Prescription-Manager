@@ -20,63 +20,82 @@ const Topbar = () => {
       title: "Dashboard",
       icon: "📊",
       color: "from-blue-500 to-indigo-500",
-      description:
-        "Overview of your pharmacy operations with key metrics and quick actions.",
+      description: "Real-time overview of pharmacy operations and metrics.",
       features: [
-        "View total medicines, batches, and patients",
-        "Quick statistics at a glance",
-        "Recent activity tracking",
+        "Total stock count and critical/low stock alerts",
+        "Medicines in queue awaiting dispense",
+        "Today's revenue and bill count",
+        "Queue priority distribution (Emergency, High, Normal, Low)",
       ],
     },
     {
-      title: "Inventory Management",
-      icon: "💊",
-      color: "from-emerald-500 to-teal-500",
+      title: "Prescriptions",
+      icon: "📋",
+      color: "from-cyan-500 to-blue-500",
       description:
-        "Manage medicine stock using Hash Table for O(1) lookup speed.",
+        "Create and manage patient prescriptions with auto-queueing.",
       features: [
-        "Search medicines by code (e.g., MED001) for instant results",
-        "Add/Edit medicine details",
-        "View stock levels with color-coded alerts",
-        "Hash Table visualization shows data structure in action",
+        "Search prescriptions by ID, patient name, or medicine",
+        "Create new prescriptions with multiple medicines",
+        "View prescription details with medicine dosages",
+        "Automatic queue assignment on creation",
+        "Track prescription status (Draft → Queued → Dispensed)",
       ],
     },
     {
-      title: "Queue System",
+      title: "Queue Management",
       icon: "👥",
       color: "from-amber-500 to-orange-500",
-      description: "Priority-based patient queue using Min-Heap algorithm.",
+      description:
+        "Priority-based patient queue powered by Min-Heap algorithm (4 priority levels).",
       features: [
-        "Automatic priority ordering (Emergency → High → Normal → Low)",
-        "Add patients to queue",
-        "Process highest priority patient first",
-        "Min-Heap tree visualization shows algorithm structure",
+        "Automatic priority ordering: Emergency → High → Normal → Low",
+        "Process patients by priority with 'Process Next'",
+        "Call next patient to counter",
+        "Visual priority indicators",
+        "Real-time queue status updates",
       ],
     },
     {
       title: "Dispense Medicine",
-      icon: "🏥",
-      color: "from-rose-500 to-pink-500",
+      icon: "💊",
+      color: "from-emerald-500 to-teal-500",
       description:
-        "FEFO (First-Expiry-First-Out) allocation using Greedy algorithm.",
+        "FEFO (First-Expiry-First-Out) batch allocation using Greedy algorithm.",
       features: [
-        "Search prescriptions by ID",
+        "Search and process queued prescriptions",
         "Automatic batch allocation from earliest expiry",
-        "View step-by-step greedy algorithm choices",
-        "Minimize medicine wastage through smart allocation",
+        "Handle partial dispenses and backorders",
+        "Generate bills automatically",
+        "View allocation details and remaining inventory",
       ],
     },
     {
-      title: "Audit History",
+      title: "Inventory",
+      icon: "📦",
+      color: "from-pink-500 to-rose-500",
+      description:
+        "Manage medicine stock with batch tracking and hash table optimization.",
+      features: [
+        "View all medicines with stock levels and batch details",
+        "Add batches with purchase cost and expiry dates",
+        "Color-coded alerts: Critical (Red) / Low (Yellow) / Normal (Green)",
+        "Search by medicine name for instant results",
+        "Track cost and sale price per medicine",
+      ],
+    },
+    {
+      title: "History",
       icon: "🔒",
       color: "from-purple-500 to-violet-500",
       description:
-        "Immutable audit trail using Append-Only Log with hash chain.",
+        "Immutable audit trail with hash chain (blockchain-like tamper detection).",
       features: [
-        "View all system activities",
-        "Tamper-evident hash chain (like blockchain)",
-        "Filter by action type or search",
-        "Verify chain integrity",
+        "View all dispense records with patient and medicine details",
+        "See bills linked to each dispense (Paid/Pending status)",
+        "Partial/Success status badges",
+        "Hash chain verification for data integrity",
+        "Total records count and chain length tracking",
       ],
     },
   ];
@@ -195,36 +214,37 @@ const Topbar = () => {
               ))}
             </div>
 
-            {/* DSA Tips */}
+            {/* Tips */}
             <div className="p-3 bg-gradient-to-br from-info-light to-secondary-light rounded-lg border border-info/20">
               <h3 className="font-semibold text-xs text-slate-900 mb-2 flex items-center gap-1.5">
                 <span className="text-sm">💡</span>
-                DSA Visualization Tips
+                Tips & Features
               </h3>
               <ul className="space-y-1 text-[11px] text-slate-600">
                 <li className="flex items-start gap-1.5">
                   <span className="text-primary">•</span>
-                  Click "View Algorithm" buttons to see data structures in
-                  action
+                  <strong>Dashboard:</strong> See real-time stock alerts and
+                  queue status
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="text-primary">•</span>
-                  Hash Table: Type medicine codes starting with "MED" for
-                  instant O(1) lookup
+                  <strong>Queue:</strong> Prescriptions automatically queued by
+                  priority
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="text-primary">•</span>
-                  Min-Heap: Add patients or process queue to see heap
-                  reorganization
+                  <strong>Dispense:</strong> FEFO ensures earliest-expiring
+                  batches used first
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="text-primary">•</span>
-                  FEFO: Search prescriptions to see greedy batch allocation
-                  step-by-step
+                  <strong>Inventory:</strong> Color-coded stock levels (Red:
+                  Critical, Yellow: Low, Green: Normal)
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="text-primary">•</span>
-                  Audit Log: Add entries to see the immutable hash chain grow
+                  <strong>History:</strong> Bills track payments and immutable
+                  records prevent tampering
                 </li>
               </ul>
             </div>

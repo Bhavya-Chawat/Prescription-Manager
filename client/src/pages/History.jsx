@@ -4,12 +4,15 @@ import {
   Search,
   Filter,
   Eye,
-  EyeOff,
-  Plus,
-  Link,
-  Lock,
+  FileText,
+  DollarSign,
   Clock,
+  CheckCircle,
+  Lock,
+  Link,
+  Plus,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
@@ -22,10 +25,12 @@ import LoadingSpinner from "../components/ui/LoadingSpinner";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "../components/ui/Dialog";
+import api from "../services/api";
 
 // ============================================
 // DSA: APPEND-ONLY LOG IMPLEMENTATION
@@ -285,36 +290,106 @@ export default function AuditHistory() {
   const [actionFilter, setActionFilter] = useState("all");
   const [showDSAModal, setShowDSAModal] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(null);
+  const [selectedBill, setSelectedBill] = useState(null);
+  const [showBillModal, setShowBillModal] = useState(false);
 
   useEffect(() => {
+    fetchRealHistory();
+  }, []);
+
+  const fetchRealHistory = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setLogs(auditLog.getEntries());
-      setLoading(false);
-    }, 500);
-  }, [auditLog]);
+    try {
+      const { getAllDispenses } = await import("../services/dispenseApi");
+      const response = await getAllDispenses();
+      console.log("History API response:", response);
+      const dispenses = response.data?.data || [];
+      console.log("Dispenses data:", dispenses);
 
-  // Add new log entry (demonstration)
-  const handleAddLogEntry = () => {
-    const actions = ["Create", "Update", "Delete", "Dispense", "Login"];
-    const entities = ["User", "Medicine", "Prescription", "Queue"];
-    const randomAction = actions[Math.floor(Math.random() * actions.length)];
-    const randomEntity = entities[Math.floor(Math.random() * entities.length)];
+      // Convert dispense records to log format
+      const convertedLogs = dispenses.map((dispense, index) => {
+        // Get item count and total quantity from prescription items
+        const itemCount = dispense.prescriptionId?.items?.length || 0;
+        const totalQuantity =
+          dispense.prescriptionId?.items?.reduce(
+            (sum, item) => sum + (item.quantity || 0),
+            0
+          ) || 0;
+        const patientName =
+          dispense.prescriptionId?.patientId?.name || "Unknown Patient";
+        const prescriptionId =
+          dispense.prescriptionId?._id?.slice(-8).toUpperCase() || "N/A";
 
-    auditLog.append({
-      action: randomAction,
-      entity: randomEntity,
-      entityId: `${randomEntity.toUpperCase().slice(0, 3)}-${Math.floor(
-        Math.random() * 1000
-      )}`,
-      user: "Demo User",
-      details: `${randomAction} operation on ${randomEntity}`,
-      status: Math.random() > 0.2 ? "Success" : "Failed",
-    });
+        return {
+          timestamp: dispense.createdAt || new Date().toISOString(),
+          data: {
+            action: "Dispense",
+            entity: "Prescription",
+            entityId: prescriptionId,
+            user: "Pharmacist",
+            details: `Dispensed ${itemCount} medicine${
+              itemCount !== 1 ? "s" : ""
+            } (${totalQuantity} units total) to ${patientName}`,
+            status: dispense.status === "full" ? "Success" : "Partial",
+            prescription: dispense.prescriptionId,
+            patient: dispense.prescriptionId?.patientId,
+            dispense: dispense,
+            bill: dispense.bill, // Include bill data
+          },
+          previousHash: index > 0 ? "00000000" : "00000000",
+          hash: generateHash({
+            dispenseId: dispense._id,
+            timestamp: dispense.createdAt,
+          }),
+        };
+      });
 
-    setLogs(auditLog.getEntries());
-    setHighlightedIndex(0);
-    setTimeout(() => setHighlightedIndex(null), 2000);
+      setLogs(
+        convertedLogs.length > 0
+          ? convertedLogs
+          : [
+              {
+                timestamp: new Date().toISOString(),
+                data: {
+                  action: "System",
+                  entity: "Status",
+                  entityId: "SYS-001",
+                  user: "System",
+                  details:
+                    "No dispense records found. Start dispensing prescriptions to see history.",
+                  status: "Info",
+                },
+                previousHash: "00000000",
+                hash: "00000000",
+              },
+            ]
+      );
+    } catch (error) {
+      console.error("Error fetching history:", error);
+      console.error("Error details:", error.response?.data);
+      setLogs([
+        {
+          timestamp: new Date().toISOString(),
+          data: {
+            action: "Error",
+            entity: "System",
+            entityId: "ERR-001",
+            user: "System",
+            details: `Failed to load history: ${
+              error.response?.data?.message || error.message || "Unknown error"
+            }`,
+            status: "Error",
+          },
+          previousHash: "00000000",
+          hash: "00000001",
+        },
+      ]);
+    }
+    setLoading(false);
+  };
+
+  const handleRefreshHistory = () => {
+    fetchRealHistory();
   };
 
   const getActionBadge = (action) => {
@@ -331,11 +406,13 @@ export default function AuditHistory() {
   };
 
   const getStatusBadge = (status) => {
-    return status === "Success" ? (
-      <Badge variant="success">Success</Badge>
-    ) : (
-      <Badge variant="error">Failed</Badge>
-    );
+    if (status === "Success") {
+      return <Badge variant="success">Success</Badge>;
+    } else if (status === "Partial") {
+      return <Badge variant="warning">Partial</Badge>;
+    } else {
+      return <Badge variant="info">{status}</Badge>;
+    }
   };
 
   const filteredLogs = logs.filter((entry) => {
@@ -377,6 +454,16 @@ export default function AuditHistory() {
           </p>
         </div>
         <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={handleRefreshHistory}
+            disabled={loading}
+          >
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
           <Button variant="outline" onClick={() => setShowDSAModal(true)}>
             <Eye className="w-4 h-4 mr-2" />
             View Algorithm
@@ -406,9 +493,9 @@ export default function AuditHistory() {
           <Card.Body className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Chain Length</p>
+                <p className="text-sm text-gray-500">Total Records</p>
                 <p className="text-2xl font-bold text-info mt-1">
-                  {auditLog.size()}
+                  {logs.length}
                 </p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center">
@@ -525,17 +612,16 @@ export default function AuditHistory() {
               <Table.Head>Hash</Table.Head>
               <Table.Head>Timestamp</Table.Head>
               <Table.Head>Action</Table.Head>
-              <Table.Head>Entity</Table.Head>
               <Table.Head>Entity ID</Table.Head>
-              <Table.Head>User</Table.Head>
               <Table.Head>Details</Table.Head>
               <Table.Head>Status</Table.Head>
+              <Table.Head>Actions</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {filteredLogs.length === 0 ? (
               <Table.Row>
-                <Table.Cell colSpan={8}>
+                <Table.Cell colSpan={7}>
                   <EmptyState
                     icon={History}
                     title="No audit logs found"
@@ -560,19 +646,30 @@ export default function AuditHistory() {
                     {new Date(entry.timestamp).toLocaleString()}
                   </Table.Cell>
                   <Table.Cell>{getActionBadge(entry.data.action)}</Table.Cell>
-                  <Table.Cell>{entry.data.entity}</Table.Cell>
                   <Table.Cell>
                     <code className="text-xs bg-info-light px-2 py-1 rounded">
                       {entry.data.entityId}
                     </code>
                   </Table.Cell>
-                  <Table.Cell className="font-medium">
-                    {entry.data.user}
-                  </Table.Cell>
-                  <Table.Cell className="text-sm text-text-muted max-w-md truncate">
+                  <Table.Cell className="text-sm text-text-muted max-w-md">
                     {entry.data.details}
                   </Table.Cell>
                   <Table.Cell>{getStatusBadge(entry.data.status)}</Table.Cell>
+                  <Table.Cell>
+                    {entry.data.bill && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedBill(entry.data.bill);
+                          setShowBillModal(true);
+                        }}
+                      >
+                        <FileText className="w-3 h-3 mr-1" />
+                        View Bill
+                      </Button>
+                    )}
+                  </Table.Cell>
                 </Table.Row>
               ))
             )}
@@ -963,6 +1060,117 @@ public:
               </div>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bill Modal */}
+      <Dialog open={showBillModal} onOpenChange={setShowBillModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center shadow-md">
+                <FileText className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <DialogTitle className="font-bold text-gray-900">
+                  Bill Details
+                </DialogTitle>
+                <DialogDescription className="text-gray-500">
+                  Complete billing information for this dispense
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          {selectedBill && (
+            <div className="space-y-4 p-4">
+              {/* Bill Info */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <p className="text-xs text-gray-500">Bill ID</p>
+                  <p className="font-mono text-sm font-medium">
+                    {selectedBill._id?.slice(-8).toUpperCase() || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Date</p>
+                  <p className="text-sm font-medium">
+                    {new Date(selectedBill.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Status</p>
+                  <Badge variant="success">
+                    {selectedBill.status || "Paid"}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Items Table */}
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="text-left p-3 text-sm font-semibold">
+                        Medicine
+                      </th>
+                      <th className="text-center p-3 text-sm font-semibold">
+                        Qty
+                      </th>
+                      <th className="text-right p-3 text-sm font-semibold">
+                        Unit Price
+                      </th>
+                      <th className="text-right p-3 text-sm font-semibold">
+                        Total
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {selectedBill.items?.map((item, index) => (
+                      <tr key={index}>
+                        <td className="p-3 text-sm">{item.name}</td>
+                        <td className="p-3 text-sm text-center">
+                          {item.quantity}
+                        </td>
+                        <td className="p-3 text-sm text-right">
+                          ₹{item.unitPrice?.toFixed(2)}
+                        </td>
+                        <td className="p-3 text-sm text-right font-medium">
+                          ₹{item.total?.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Totals */}
+              <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="font-medium">
+                    ₹{selectedBill.subtotal?.toFixed(2) || "0.00"}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Discount:</span>
+                  <span className="font-medium text-green-600">
+                    -₹{selectedBill.discount?.toFixed(2) || "0.00"}
+                  </span>
+                </div>
+                <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-200">
+                  <span>Total:</span>
+                  <span className="text-green-600">
+                    ₹{selectedBill.total?.toFixed(2) || "0.00"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button onClick={() => setShowBillModal(false)}>Close</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

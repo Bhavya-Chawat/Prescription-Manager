@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardHeader, CardContent } from "../components/ui/Card";
 import {
   Package,
@@ -18,49 +19,72 @@ import {
 import Badge from "../components/ui/Badge";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import useAuthStore from "../store/authStore";
+import { getDashboardStats } from "../services/dashboardApi";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
     totalStock: 0,
     lowStock: 0,
+    criticalStock: 0,
     inQueue: 0,
-    todayBills: 0,
+    todayRevenue: 0,
+    todayBillCount: 0,
+    queuePriorities: { emergency: 0, high: 0, normal: 0, low: 0 },
+    stockDetails: { critical: 0, low: 0, healthy: 0 },
   });
   const [loading, setLoading] = useState(true);
   const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      const response = await getDashboardStats();
+      const data = response.data?.data || {};
       setStats({
-        totalStock: 1247,
-        lowStock: 23,
-        inQueue: 8,
-        todayBills: 42,
+        totalStock: data.totalStock || 0,
+        lowStock: data.lowStock || 0,
+        criticalStock: data.criticalStock || 0,
+        inQueue: data.inQueue || 0,
+        todayRevenue: data.todayRevenue || 0,
+        todayBillCount: data.todayBillCount || 0,
+        queuePriorities: data.queuePriorities || {
+          emergency: 0,
+          high: 0,
+          normal: 0,
+          low: 0,
+        },
+        stockDetails: data.stockDetails || { critical: 0, low: 0, healthy: 0 },
       });
       setLoading(false);
-    }, 500);
-  }, []);
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      setLoading(false);
+    }
+  };
 
   if (loading) return <LoadingSpinner />;
 
   const statsCards = [
     {
-      title: "Total Medicines",
+      title: "Total Stock Units",
       value: stats.totalStock.toLocaleString(),
       subtitle: "In inventory",
       icon: Package,
-      trend: "+12%",
+      trend: "Live",
       trendUp: true,
       gradient: "from-green-400 to-green-500",
       lightBg: "bg-green-50",
     },
     {
       title: "Low Stock Alert",
-      value: stats.lowStock,
-      subtitle: "Need reorder",
+      value: `${stats.criticalStock}/${stats.lowStock}`,
+      subtitle: "Critical / Low",
       icon: AlertTriangle,
-      trend: "-8%",
+      trend: "Attention",
       trendUp: false,
       gradient: "from-amber-400 to-amber-500",
       lightBg: "bg-amber-50",
@@ -70,17 +94,17 @@ export default function Dashboard() {
       value: stats.inQueue,
       subtitle: "Waiting now",
       icon: Users,
-      trend: "+3",
+      trend: "Real-time",
       trendUp: true,
       gradient: "from-gray-800 to-gray-900",
       lightBg: "bg-gray-100",
     },
     {
       title: "Today's Revenue",
-      value: `₹${(stats.todayBills * 1085).toLocaleString()}`,
-      subtitle: `${stats.todayBills} transactions`,
+      value: `₹${stats.todayRevenue.toLocaleString()}`,
+      subtitle: `${stats.todayBillCount} transactions`,
       icon: DollarSign,
-      trend: "+24%",
+      trend: "Today",
       trendUp: true,
       gradient: "from-green-500 to-green-600",
       lightBg: "bg-green-50",
@@ -186,35 +210,47 @@ export default function Dashboard() {
               {[
                 {
                   label: "Emergency",
-                  count: 2,
+                  count: stats.queuePriorities[0] || 0,
                   color: "bg-red-500",
                   lightColor: "bg-red-50",
                   textColor: "text-red-600",
-                  percentage: 25,
+                  percentage:
+                    stats.inQueue > 0
+                      ? ((stats.queuePriorities[0] || 0) / stats.inQueue) * 100
+                      : 0,
                 },
                 {
                   label: "High Priority",
-                  count: 3,
+                  count: stats.queuePriorities[1] || 0,
                   color: "bg-amber-500",
                   lightColor: "bg-amber-50",
                   textColor: "text-amber-600",
-                  percentage: 38,
+                  percentage:
+                    stats.inQueue > 0
+                      ? ((stats.queuePriorities[1] || 0) / stats.inQueue) * 100
+                      : 0,
                 },
                 {
                   label: "Normal",
-                  count: 2,
+                  count: stats.queuePriorities[2] || 0,
                   color: "bg-green-500",
                   lightColor: "bg-green-50",
                   textColor: "text-green-600",
-                  percentage: 25,
+                  percentage:
+                    stats.inQueue > 0
+                      ? ((stats.queuePriorities[2] || 0) / stats.inQueue) * 100
+                      : 0,
                 },
                 {
                   label: "Low Priority",
-                  count: 1,
+                  count: stats.queuePriorities[3] || 0,
                   color: "bg-gray-400",
                   lightColor: "bg-gray-100",
                   textColor: "text-gray-600",
-                  percentage: 12,
+                  percentage:
+                    stats.inQueue > 0
+                      ? ((stats.queuePriorities[3] || 0) / stats.inQueue) * 100
+                      : 0,
                 },
               ].map((item, i) => (
                 <div key={i} className="space-y-2">
@@ -315,7 +351,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Recent Activity */}
+      {/* System Information */}
       <Card>
         <CardHeader gradient>
           <div className="flex items-center justify-between">
@@ -325,65 +361,53 @@ export default function Dashboard() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Recent Activity
+                  Quick Actions
                 </h3>
                 <p className="text-sm text-gray-500">
-                  Latest operations in the system
+                  Common pharmacy operations
                 </p>
               </div>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {[
-              {
-                time: "10:45 AM",
-                action: "Dispensed",
-                detail: "Prescription RX-1042",
-                type: "success",
-              },
-              {
-                time: "10:42 AM",
-                action: "Billed",
-                detail: "Invoice BL-0891 - ₹2,450",
-                type: "primary",
-              },
-              {
-                time: "10:38 AM",
-                action: "Queued",
-                detail: "Patient John Doe (Emergency)",
-                type: "error",
-              },
-              {
-                time: "10:35 AM",
-                action: "Stock Updated",
-                detail: "Paracetamol 500mg (+100 units)",
-                type: "info",
-              },
-              {
-                time: "10:30 AM",
-                action: "Processed",
-                detail: "Queue position Q-001",
-                type: "success",
-              },
-            ].map((activity, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors"
-              >
-                <div className="flex items-center gap-2 w-24">
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-500">{activity.time}</span>
-                </div>
-                <Badge variant={activity.type} size="sm">
-                  {activity.action}
-                </Badge>
-                <span className="text-sm text-gray-700 flex-1">
-                  {activity.detail}
-                </span>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link
+              to="/prescriptions"
+              className="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-md transition-all"
+            >
+              <Stethoscope className="w-8 h-8 text-blue-600 mb-2" />
+              <span className="text-sm font-medium text-blue-900">
+                New Prescription
+              </span>
+            </Link>
+            <Link
+              to="/queue"
+              className="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:shadow-md transition-all"
+            >
+              <Users className="w-8 h-8 text-purple-600 mb-2" />
+              <span className="text-sm font-medium text-purple-900">
+                View Queue
+              </span>
+            </Link>
+            <Link
+              to="/inventory"
+              className="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl hover:shadow-md transition-all"
+            >
+              <Package className="w-8 h-8 text-green-600 mb-2" />
+              <span className="text-sm font-medium text-green-900">
+                Manage Inventory
+              </span>
+            </Link>
+            <Link
+              to="/history"
+              className="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl hover:shadow-md transition-all"
+            >
+              <Clock className="w-8 h-8 text-orange-600 mb-2" />
+              <span className="text-sm font-medium text-orange-900">
+                View History
+              </span>
+            </Link>
           </div>
         </CardContent>
       </Card>

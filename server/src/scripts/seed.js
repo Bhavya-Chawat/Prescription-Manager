@@ -11,6 +11,8 @@ const Medicine = require("../models/Medicine.model.js");
 const Batch = require("../models/Batch.model.js");
 const Patient = require("../models/Patient.model.js");
 const Supplier = require("../models/Supplier.model.js");
+const Prescription = require("../models/Prescription.model.js");
+const QueueEntry = require("../models/QueueEntry.model.js");
 
 const connectDB = async () => {
   try {
@@ -97,96 +99,80 @@ const seedMedicines = async (suppliers) => {
   const medicines = [
     {
       code: "PARA500",
-      name: "Paracetamol 500mg",
+      name: "Crocin Advance 500mg",
       genericName: "Paracetamol",
-      category: "analgesic",
+      category: "Analgesic",
       unit: "tablet",
-      unitPrice: 2.5,
-      reorderThreshold: 50,
+      unitPrice: 5.5,
+      reorderThreshold: 100,
       supplierId: suppliers[0]._id,
+      manufacturer: "GSK",
       isActive: true,
     },
     {
       code: "AMOX250",
-      name: "Amoxicillin 250mg",
+      name: "Amoxil 250mg",
       genericName: "Amoxicillin",
-      category: "antibiotic",
+      category: "Antibiotic",
       unit: "capsule",
-      unitPrice: 12.0,
-      reorderThreshold: 50,
+      unitPrice: 18.75,
+      reorderThreshold: 100,
       supplierId: suppliers[0]._id,
-      isActive: true,
-    },
-    {
-      code: "OMEP20",
-      name: "Omeprazole 20mg",
-      genericName: "Omeprazole",
-      category: "antacid",
-      unit: "tablet",
-      unitPrice: 8.5,
-      reorderThreshold: 30,
-      supplierId: suppliers[1]._id,
+      manufacturer: "GlaxoSmithKline Pharmaceuticals Ltd",
       isActive: true,
     },
     {
       code: "DICLO50",
-      name: "Diclofenac 50mg",
+      name: "Voveran 50mg",
       genericName: "Diclofenac",
-      category: "analgesic",
+      category: "Pain Relief",
       unit: "tablet",
-      unitPrice: 5.0,
-      reorderThreshold: 50,
+      unitPrice: 12.25,
+      reorderThreshold: 80,
       supplierId: suppliers[1]._id,
+      manufacturer: "Novartis India Ltd",
       isActive: true,
     },
     {
-      code: "AZITH500",
-      name: "Azithromycin 500mg",
-      genericName: "Azithromycin",
-      category: "antibiotic",
+      code: "OMEP20",
+      name: "Omez 20mg",
+      genericName: "Omeprazole",
+      category: "Gastrointestinal",
+      unit: "capsule",
+      unitPrice: 8.5,
+      reorderThreshold: 70,
+      supplierId: suppliers[1]._id,
+      manufacturer: "Dr. Reddy's Laboratories",
+      isActive: true,
+    },
+    {
+      code: "MET500",
+      name: "Glucophage 500mg",
+      genericName: "Metformin",
+      category: "Diabetes",
       unit: "tablet",
       unitPrice: 15.0,
-      reorderThreshold: 40,
+      reorderThreshold: 120,
+      supplierId: suppliers[2]._id,
+      manufacturer: "Merck India",
+      isActive: true,
+    },
+    {
+      code: "IBU400",
+      name: "Ibugesic Plus 400mg",
+      genericName: "Ibuprofen",
+      category: "Pain Relief",
+      unit: "tablet",
+      unitPrice: 7.25,
+      reorderThreshold: 150,
       supplierId: suppliers[0]._id,
-      isActive: true,
-    },
-    {
-      code: "METF500",
-      name: "Metformin 500mg",
-      genericName: "Metformin",
-      category: "diabetes",
-      unit: "tablet",
-      unitPrice: 3.0,
-      reorderThreshold: 100,
-      supplierId: suppliers[2]._id,
-      isActive: true,
-    },
-    {
-      code: "ASPIR75",
-      name: "Aspirin 75mg",
-      genericName: "Aspirin",
-      category: "cardiovascular",
-      unit: "tablet",
-      unitPrice: 1.5,
-      reorderThreshold: 80,
-      supplierId: suppliers[2]._id,
-      isActive: true,
-    },
-    {
-      code: "CETIR10",
-      name: "Cetirizine 10mg",
-      genericName: "Cetirizine",
-      category: "antihistamine",
-      unit: "tablet",
-      unitPrice: 2.0,
-      reorderThreshold: 60,
-      supplierId: suppliers[1]._id,
+      manufacturer: "Abbott India Ltd",
       isActive: true,
     },
   ];
 
   const insertedMedicines = await Medicine.insertMany(medicines);
-  console.log("✅ Medicines seeded");
+  console.log(`✅ ${insertedMedicines.length} Medicines seeded`);
   return insertedMedicines;
 };
 
@@ -196,32 +182,78 @@ const seedBatches = async (medicines) => {
   const batches = [];
   const today = new Date();
 
+  // Strategy: Create specific stock levels
+  // - Some medicines will have CRITICAL stock (< 50% of threshold)
+  // - Some will have LOW stock (50-99% of threshold)
+  // - Some will have NORMAL stock (> threshold)
+
+  const stockStrategies = [
+    { type: "CRITICAL", multiplier: 0.3 }, // 30% of threshold
+    { type: "LOW", multiplier: 0.7 }, // 70% of threshold
+    { type: "NORMAL", multiplier: 1.5 }, // 150% of threshold
+  ];
+
   medicines.forEach((medicine, index) => {
-    // Create 2-3 batches per medicine with varying expiry dates
-    const batchCount = Math.floor(Math.random() * 2) + 2;
+    // Assign strategy based on index to ensure variety
+    const strategyIndex = index % 3;
+    const strategy = stockStrategies[strategyIndex];
 
-    for (let i = 0; i < batchCount; i++) {
+    // Calculate total quantity based on threshold and strategy
+    const totalQuantity = Math.floor(
+      medicine.reorderThreshold * strategy.multiplier
+    );
+
+    // Decide number of batches (1-3)
+    const numBatches = Math.floor(Math.random() * 2) + 1; // 1 or 2 batches
+
+    // Split quantity across batches
+    let remainingQuantity = totalQuantity;
+
+    for (let i = 0; i < numBatches; i++) {
+      const isLastBatch = i === numBatches - 1;
+      const quantity = isLastBatch
+        ? remainingQuantity
+        : Math.floor(remainingQuantity / (numBatches - i));
+
+      remainingQuantity -= quantity;
+
+      // Expiry dates: some near expiry, some far
       const expiryDate = new Date(today);
-      expiryDate.setMonth(today.getMonth() + (index * 2 + i * 3 + 3)); // Varying expiry
+      if (i === 0 && Math.random() > 0.7) {
+        // 30% chance first batch expires soon (1-3 months)
+        expiryDate.setMonth(
+          today.getMonth() + Math.floor(Math.random() * 3) + 1
+        );
+      } else {
+        // Normal expiry (6-18 months)
+        expiryDate.setMonth(today.getMonth() + (6 + i * 6));
+      }
 
-      const quantity = index === 3 ? 0 : Math.floor(Math.random() * 100) + 20; // Make Diclofenac out of stock
+      const receivedDate = new Date();
+      receivedDate.setDate(receivedDate.getDate() - i * 30);
 
       batches.push({
         medicineId: medicine._id,
-        batchNumber: `BT-${medicine.code}-${String(i + 1).padStart(3, "0")}`,
+        batchNumber: `BATCH-${medicine.code}-${String(i + 1).padStart(3, "0")}`,
         quantity,
         expiryDate,
-        receivedDate: new Date(
-          today.getTime() - (30 + i * 10) * 24 * 60 * 60 * 1000
-        ),
-        costPrice: medicine.unitPrice * 0.6, // 60% of selling price
+        receivedDate,
+        costPrice: medicine.unitPrice * (0.5 + Math.random() * 0.2),
         isExpired: false,
       });
     }
+
+    console.log(
+      `  ${medicine.code}: ${totalQuantity} units (${strategy.type}) - threshold: ${medicine.reorderThreshold}`
+    );
   });
 
   await Batch.insertMany(batches);
-  console.log("✅ Batches seeded");
+  console.log(`✅ ${batches.length} Batches seeded with varied stock levels`);
+  console.log("ℹ️  Stock distribution:");
+  console.log("   - Critical stock (red): ~4 medicines");
+  console.log("   - Low stock (yellow): ~4 medicines");
+  console.log("   - Normal stock (green): ~4 medicines");
 };
 
 const seedPatients = async () => {
@@ -229,54 +261,325 @@ const seedPatients = async () => {
 
   const patients = [
     {
-      patientNumber: "P-001234",
-      name: "Rajesh Kumar",
-      age: 45,
-      gender: "male",
-      contact: "+91-9876501234",
-      bloodGroup: "AB+",
-      allergies: ["Penicillin"],
-    },
-    {
-      patientNumber: "P-001235",
-      name: "Priya Singh",
-      age: 32,
-      gender: "female",
-      contact: "+91-9876501235",
-      bloodGroup: "O+",
-      allergies: [],
-    },
-    {
-      patientNumber: "P-001236",
-      name: "Amit Patel",
-      age: 58,
-      gender: "male",
-      contact: "+91-9876501236",
+      name: "Rahul Sharma",
+      age: 42,
+      gender: "Male",
+      phone: "+91-9876543210",
+      address: "Mumbai, Maharashtra",
+      email: "rahul.sharma@example.com",
       bloodGroup: "B+",
-      allergies: ["Sulfa drugs"],
+      medicalHistory: "Hypertension",
     },
     {
-      patientNumber: "P-001237",
-      name: "Sita Devi",
-      age: 68,
-      gender: "female",
-      contact: "+91-9876501237",
+      name: "Priya Patel",
+      age: 28,
+      gender: "Female",
+      phone: "+91-9876543211",
+      address: "Ahmedabad, Gujarat",
+      email: "priya.patel@example.com",
+      bloodGroup: "O+",
+      medicalHistory: "Asthma",
+    },
+    {
+      name: "Amit Kumar",
+      age: 35,
+      gender: "Male",
+      phone: "+91-9876543212",
+      address: "New Delhi",
+      email: "amit.kumar@example.com",
       bloodGroup: "A+",
-      allergies: [],
+      medicalHistory: "None",
     },
     {
-      patientNumber: "P-001238",
-      name: "Ravi Kumar",
-      age: 25,
-      gender: "male",
-      contact: "+91-9876501238",
+      name: "Sneha Desai",
+      age: 31,
+      gender: "Female",
+      phone: "+91-9876543213",
+      address: "Pune, Maharashtra",
+      email: "sneha.desai@example.com",
+      bloodGroup: "AB+",
+      medicalHistory: "Diabetes Type 2",
+    },
+    {
+      name: "Vikram Singh",
+      age: 45,
+      gender: "Male",
+      phone: "+91-9876543214",
+      address: "Jaipur, Rajasthan",
+      email: "vikram.singh@example.com",
       bloodGroup: "O-",
-      allergies: [],
+      medicalHistory: "Arthritis",
+    },
+    {
+      name: "Anjali Reddy",
+      age: 26,
+      gender: "Female",
+      phone: "+91-9876543215",
+      address: "Hyderabad, Telangana",
+      email: "anjali.reddy@example.com",
+      bloodGroup: "B-",
+      medicalHistory: "Migraine",
+    },
+    {
+      name: "Rajesh Verma",
+      age: 52,
+      gender: "Male",
+      phone: "+91-9876543216",
+      address: "Bangalore, Karnataka",
+      email: "rajesh.verma@example.com",
+      bloodGroup: "A-",
+      medicalHistory: "Heart Disease",
+    },
+    {
+      name: "Kavita Joshi",
+      age: 38,
+      gender: "Female",
+      phone: "+91-9876543217",
+      address: "Kolkata, West Bengal",
+      email: "kavita.joshi@example.com",
+      bloodGroup: "AB-",
+      medicalHistory: "Thyroid",
+    },
+    {
+      name: "Suresh Nair",
+      age: 48,
+      gender: "Male",
+      phone: "+91-9876543218",
+      address: "Chennai, Tamil Nadu",
+      email: "suresh.nair@example.com",
+      bloodGroup: "B+",
+      medicalHistory: "High Cholesterol",
+    },
+    {
+      name: "Deepa Iyer",
+      age: 29,
+      gender: "Female",
+      phone: "+91-9876543219",
+      address: "Surat, Gujarat",
+      email: "deepa.iyer@example.com",
+      bloodGroup: "O+",
+      medicalHistory: "Allergy",
     },
   ];
 
-  await Patient.insertMany(patients);
-  console.log("✅ Patients seeded");
+  const insertedPatients = await Patient.insertMany(patients);
+  console.log(`✅ ${insertedPatients.length} Patients seeded`);
+  return insertedPatients;
+};
+
+const seedPrescriptionsAndQueues = async (patients, medicines) => {
+  await Prescription.deleteMany({});
+  await QueueEntry.deleteMany({});
+
+  const { createPrescription } = require("../services/prescription.service.js");
+
+  const doctors = [
+    "Dr. Anil Sharma",
+    "Dr. Priya Gupta",
+    "Dr. Rajesh Patel",
+    "Dr. Sunita Reddy",
+    "Dr. Vikram Joshi",
+  ];
+
+  const departments = [
+    "General Medicine",
+    "Cardiology",
+    "Orthopedics",
+    "Dermatology",
+    "Pediatrics",
+  ];
+
+  const prescriptions = [];
+  const queueEntries = [];
+
+  // Create 10 prescriptions - all auto-queued, some already dispensed
+  const statuses = [
+    { type: "queued", count: 5 }, // 5 queued (waiting to be dispensed)
+    { type: "dispensed", count: 5 }, // 5 already dispensed
+  ];
+
+  let prescriptionIndex = 0;
+
+  for (const statusGroup of statuses) {
+    for (let i = 0; i < statusGroup.count; i++) {
+      // Distribute prescriptions evenly across patients for uniqueness
+      const patient = patients[prescriptionIndex % patients.length];
+      const doctor = doctors[prescriptionIndex % doctors.length];
+      const department = departments[prescriptionIndex % departments.length];
+
+      // Select 1-4 random medicines for each prescription
+      const numMedicines = Math.floor(Math.random() * 3) + 2; // 2-4 medicines
+      const selectedMedicines = [];
+      const usedMedicines = new Set();
+
+      // Use different medicine combinations for variety
+      const startIdx = prescriptionIndex % (medicines.length - 1);
+      for (let j = 0; j < numMedicines && j < medicines.length; j++) {
+        const medicine = medicines[(startIdx + j) % medicines.length];
+
+        if (!usedMedicines.has(medicine._id.toString())) {
+          usedMedicines.add(medicine._id.toString());
+
+          selectedMedicines.push({
+            medicineId: medicine._id,
+            dosage:
+              medicine.name.match(/(\d+\s*(?:mg|ml|g|units?))/i)?.[1] ||
+              "1 unit",
+            quantity: Math.floor(Math.random() * 10) + 10, // 10-20 units for better variety
+          });
+        }
+      }
+
+      // Use the updated service method that properly handles patient references
+      const insertedPrescription = await createPrescription({
+        patientId: patient._id,
+        patientName: patient.name,
+        doctor,
+        department,
+        items: selectedMedicines,
+      });
+
+      // Update status if needed
+      if (statusGroup.type === "dispensed") {
+        await Prescription.findByIdAndUpdate(insertedPrescription._id, {
+          status: "dispensed",
+        });
+        insertedPrescription.status = "dispensed";
+      } else if (statusGroup.type === "queued") {
+        await Prescription.findByIdAndUpdate(insertedPrescription._id, {
+          status: "queued",
+        });
+        insertedPrescription.status = "queued";
+      }
+
+      prescriptions.push(insertedPrescription);
+
+      // Add to queue only if status is 'queued'
+      if (statusGroup.type === "queued") {
+        queueEntries.push({
+          prescriptionId: insertedPrescription._id,
+          priority: Math.floor(Math.random() * 4), // 0-3 priority levels (0=Emergency, 1=High, 2=Normal, 3=Low)
+          status: "waiting",
+        });
+      }
+
+      prescriptionIndex++;
+    }
+  }
+
+  if (queueEntries.length > 0) {
+    await QueueEntry.insertMany(queueEntries);
+    console.log(
+      `✅ ${queueEntries.length} Queue entries seeded (all prescriptions auto-queued)`
+    );
+  }
+
+  console.log(`✅ ${prescriptions.length} Prescriptions seeded`);
+  console.log(`   - ${statuses[0].count} Queued (ready to dispense)`);
+  console.log(`   - ${statuses[1].count} Dispensed (already processed)`);
+
+  return prescriptions;
+};
+
+const seedDispensesAndBills = async (prescriptions, medicines) => {
+  const Dispense = require("../models/Dispense.model.js");
+  const Bill = require("../models/Bill.model.js");
+  const Batch = require("../models/Batch.model.js");
+  const Medicine = require("../models/Medicine.model.js");
+  const QueueEntry = require("../models/QueueEntry.model.js");
+
+  await Dispense.deleteMany({});
+  await Bill.deleteMany({});
+
+  // Find all dispensed prescriptions
+  const dispensedPrescriptions = prescriptions.filter(
+    (p) => p.status === "dispensed"
+  );
+
+  for (const prescription of dispensedPrescriptions) {
+    const allocations = [];
+    const billItems = [];
+    const backorders = [];
+
+    for (const item of prescription.items) {
+      const medicine = await Medicine.findById(item.medicineId);
+      if (!medicine) continue;
+
+      // Find available batches
+      const batches = await Batch.find({
+        medicineId: item.medicineId,
+        quantity: { $gt: 0 },
+      })
+        .sort({ expiryDate: 1 })
+        .limit(2);
+
+      let remainingQty = item.quantity;
+
+      for (const batch of batches) {
+        if (remainingQty <= 0) break;
+
+        const allocatedQty = Math.min(remainingQty, batch.quantity);
+
+        // Use correct schema: allocations with itemId and batchId
+        allocations.push({
+          itemId: item._id,
+          batchId: batch._id,
+          quantity: allocatedQty,
+        });
+
+        billItems.push({
+          name: medicine.name,
+          quantity: allocatedQty,
+          unitPrice: medicine.unitPrice || 10,
+          total: (medicine.unitPrice || 10) * allocatedQty,
+        });
+
+        remainingQty -= allocatedQty;
+
+        // Reduce batch quantity
+        await Batch.findByIdAndUpdate(batch._id, {
+          $inc: { quantity: -allocatedQty },
+        });
+      }
+
+      // If still remaining, add to backorders
+      if (remainingQty > 0) {
+        backorders.push({
+          itemId: item._id,
+          remainingQty: remainingQty,
+        });
+      }
+    }
+
+    // Create dispense record with correct schema
+    const dispense = await Dispense.create({
+      prescriptionId: prescription._id,
+      allocations: allocations,
+      backorders: backorders,
+      status: backorders.length > 0 ? "partial" : "full",
+    });
+
+    // Create bill
+    const subtotal = billItems.reduce((sum, item) => sum + item.total, 0);
+    await Bill.create({
+      dispenseId: dispense._id,
+      items: billItems,
+      subtotal,
+      discount: 0,
+      total: subtotal,
+      status: "paid",
+    });
+
+    // Mark queue entry as completed for dispensed prescriptions
+    await QueueEntry.updateOne(
+      { prescriptionId: prescription._id },
+      { status: "completed", completedAt: new Date() }
+    );
+  }
+
+  console.log(
+    `✅ ${dispensedPrescriptions.length} Dispenses and Bills created for dispensed prescriptions`
+  );
 };
 
 const seedDatabase = async () => {
@@ -289,13 +592,24 @@ const seedDatabase = async () => {
     const suppliers = await seedSuppliers();
     const medicines = await seedMedicines(suppliers);
     await seedBatches(medicines);
-    await seedPatients();
+    const patients = await seedPatients();
+    const prescriptions = await seedPrescriptionsAndQueues(patients, medicines);
+    await seedDispensesAndBills(prescriptions, medicines);
 
     console.log("\n✅ Database seeding completed successfully!");
     console.log("\n📝 Test Credentials:");
     console.log("   Admin: admin / admin123");
     console.log("   Pharmacist: pharmacist / pharma123");
-    console.log("   Viewer: viewer / view123");
+    console.log("\n📦 Database Contents:");
+    console.log("   • 6 medicines (2 Critical, 2 Low Stock, 2 Normal)");
+    console.log("   • 10 unique patients with complete data");
+    console.log("   • 10 prescriptions (5 Queued, 5 Dispensed)");
+    console.log("   • 5 queue entries (prescriptions auto-queued)");
+    console.log("\n💡 Complete Flow:");
+    console.log("   1. Prescriptions → All auto-queued on creation");
+    console.log("   2. Queue → Shows 5 queued prescriptions by priority");
+    console.log("   3. Dispense → Process from queue (FEFO allocation)");
+    console.log("   4. History → View 5 dispensed prescriptions with bills");
 
     process.exit(0);
   } catch (error) {
